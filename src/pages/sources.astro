@@ -1,15 +1,42 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-const groups = [
-  ['Employment & layoffs', ['GamingLayoffs.com','ASGC layoffs tracker','DevQuest hiring report','Game Developer layoffs & closures']],
-  ['Professional sentiment', ['GDC State of the Game Industry','IGDA Developer Satisfaction Survey']],
-  ['Consumer & critical reception', ['Reddit gaming communities','Steam user reviews','Metacritic','OpenCritic']],
-  ['Commercial performance', ['Official publisher disclosures','VG Insights / Sensor Tower','Gamalytic']],
-  ['Corporate & financial', ['Company investor relations','SEC EDGAR','Yahoo Finance / market-price sources']],
-  ['Macro & capital', ['Newzoo','BCG','Bain','Drake Star gaming reports']]
-];
+import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
 ---
 <BaseLayout title="Sources · Game Industry Observatory">
-  <section class="hero compact"><p class="eyebrow">Evidence base</p><h1>Source universe</h1><p class="lede">Sources are inputs, not guarantees. Availability, automation compatibility and geographic coverage differ materially.</p></section>
-  <div class="source-grid">{groups.map(([name, items]) => <section class="panel"><h2>{name}</h2><ul>{items.map(item => <li>{item}</li>)}</ul></section>)}</div>
+  <section class="hero compact">
+    <p class="eyebrow">Evidence base</p>
+    <h1>Source registry</h1>
+    <p class="lede">The {NEWS_SOURCES.length} sources below form the canonical starting set for each reporting run. Inclusion means a source is monitored—not that every claim it makes is accepted.</p>
+    <a class="button" href={`${import.meta.env.BASE_URL}submit-source/`}>Suggest a source</a>
+  </section>
+
+  <div class="source-list">
+    {NEWS_SOURCE_CATEGORIES.map((group) => (
+      <section class="source-section" aria-labelledby={`source-${group.id}`}>
+        <div class="source-section-heading">
+          <h2 id={`source-${group.id}`}>{group.name}</h2>
+          <p>{group.description}</p>
+        </div>
+        <div class="source-table-wrap">
+          <table class="source-table">
+            <thead><tr><th>Source</th><th>What it covers</th><th>Cadence</th></tr></thead>
+            <tbody>
+              {group.sources.map((source) => (
+                <tr>
+                  <td><a href={source.url}>{source.name}</a></td>
+                  <td>{source.coverage}</td>
+                  <td>{source.cadence}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <section class="panel registry-note">
+    <div><p class="eyebrow">How this stays transparent</p><h2>One public list, reviewed changes</h2></div>
+    <p>Accepted suggestions are added to <code>src/data/newsSources.ts</code>. That file powers this page and is the required starting point for every new report, so the disclosed list and the collection input cannot quietly drift apart.</p>
+  </section>
 </BaseLayout>

@@ -10,7 +10,11 @@ A static, AI-assisted games-industry health dashboard built from individually in
 - The homepage automatically renders the latest bi-weekly report.
 - `/reports/YYYY-MM-DD/` provides permanent historical report pages.
 - `/history/` renders longitudinal views from the report collection.
+- `src/data/newsSources.ts` is the canonical source registry and required starting input for every reporting run.
+- `/sources/` publishes that registry; `/submit-source/` turns public suggestions into reviewable GitHub issues.
 - GitHub is used to keep history of every report and methodology change.
+
+Accepted source suggestions should be added to `NEWS_SOURCE_CATEGORIES` before the next report is generated. Keeping collection inputs and the public Sources page in the same file makes source-list changes inspectable in Git history.
 
 ## AI and coverage disclosure
 

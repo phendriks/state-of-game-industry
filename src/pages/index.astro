@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Disclosure from '../components/Disclosure.astro';
+import SnapshotOverview from '../components/SnapshotOverview.astro';
 const reports = (await getCollection('reports')).sort((a,b) => b.data.published.getTime() - a.data.published.getTime());
 const latest = reports[0];
 const { Content } = await render(latest);
@@ -10,14 +11,21 @@ const { Content } = await render(latest);
   <section class="hero">
     <p class="eyebrow">Latest snapshot</p>
     <h1>{latest.data.title}</h1>
-    <p class="lede">A recurring AI-assisted view of games-industry health across employment, professional sentiment, consumer demand, company performance and major industry events.</p>
+    <p class="lede">{latest.data.summary}</p>
     <div class="meta"><span>{latest.data.published.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}</span><span>Baseline: {latest.data.history_baseline ? 'yes' : 'no'}</span></div>
   </section>
+  <SnapshotOverview report={latest} />
   <Disclosure />
   <section class="quick-links">
     <a class="card" href={`${import.meta.env.BASE_URL}history/`}><strong>History</strong><span>See how the observed metrics change over time.</span></a>
     <a class="card" href={`${import.meta.env.BASE_URL}methodology/`}><strong>Methodology</strong><span>Understand scope, limitations and AI provenance.</span></a>
-    <a class="card" href={`${import.meta.env.BASE_URL}reports/${latest.id}/`}><strong>Permanent report</strong><span>Open this snapshot at its stable URL.</span></a>
+    <a class="card" href={`${import.meta.env.BASE_URL}sources/`}><strong>Sources & submissions</strong><span>Inspect the source registry or suggest one we should track.</span></a>
   </section>
-  <article class="report prose"><Content /></article>
+  <details class="full-report">
+    <summary>
+      <span><strong>Read the full analysis</strong><small>Detailed evidence, company cases, methodology notes and links</small></span>
+      <span aria-hidden="true">Open report</span>
+    </summary>
+    <article class="report prose"><Content /></article>
+  </details>
 </BaseLayout>
