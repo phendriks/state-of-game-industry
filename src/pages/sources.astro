@@ -7,7 +7,7 @@ import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
     <p class="eyebrow">Evidence base</p>
     <h1>Source registry</h1>
     <p class="lede">The {NEWS_SOURCES.length} sources below form the canonical starting set for each reporting run. Inclusion means a source is monitored—not that every claim it makes is accepted.</p>
-    <a class="button" href={`${import.meta.env.BASE_URL}submit-source/`}>Suggest a source</a>
+    <a class="button" href={`${import.meta.env.BASE_URL}submit-source/`}>Propose a source</a>
   </section>
 
   <div class="source-list">
@@ -37,6 +37,6 @@ import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
 
   <section class="panel registry-note">
     <div><p class="eyebrow">How this stays transparent</p><h2>One public list, reviewed changes</h2></div>
-    <p>Accepted suggestions are added to <code>src/data/newsSources.ts</code>. That file powers this page and is the required starting point for every new report, so the disclosed list and the collection input cannot quietly drift apart.</p>
+    <p>Contributors propose edits directly to <code>src/data/newsSources.ts</code> through a pull request. The repository owner reviews every proposal before merging it. That file powers this page and is the required starting point for every new report, so the disclosed list and collection input cannot quietly drift apart.</p>
   </section>
 </BaseLayout>

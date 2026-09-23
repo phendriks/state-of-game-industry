@@ -2,7 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Disclosure from '../../components/Disclosure.astro';
+import SnapshotOverview from '../../components/SnapshotOverview.astro';
 export async function getStaticPaths() {
   const reports = await getCollection('reports');
   return reports.map(report => ({ params: { id: report.id }, props: { report } }));
@@ -11,7 +11,7 @@ const { report } = Astro.props as { report: CollectionEntry<'reports'> };
 const { Content } = await render(report);
 ---
 <BaseLayout title={`${report.data.title} · Game Industry Observatory`}>
-  <section class="hero compact"><p class="eyebrow">Archived snapshot</p><h1>{report.data.title}</h1><div class="meta"><span>{report.data.published.toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'})}</span><a href={`https://github.com/phendriks/state-of-game-industry/blob/main/src/data/reports/${report.id}.md`}>Inspect Markdown on GitHub</a></div></section>
-  <Disclosure />
+  <section class="hero compact"><p class="eyebrow">Archived snapshot</p><h1>{report.data.title}</h1><div class="meta"><span>{report.data.published.toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'})}</span><span>{report.data.human_reviewed ? `Human reviewed by ${report.data.reviewer}` : 'Not human reviewed'}</span><a href={`https://github.com/phendriks/state-of-game-industry/blob/main/src/data/reports/${report.id}.md`}>Inspect Markdown on GitHub</a></div></section>
+  <SnapshotOverview report={report} />
   <article class="report prose"><Content /></article>
 </BaseLayout>

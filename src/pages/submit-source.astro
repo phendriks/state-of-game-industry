@@ -1,93 +1,40 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { NEWS_SOURCE_CATEGORIES } from '../data/newsSources';
+
+const registryEditUrl = 'https://github.com/phendriks/state-of-game-industry/edit/main/src/data/newsSources.ts';
 ---
-<BaseLayout title="Submit a source · Game Industry Observatory">
+<BaseLayout title="Propose a source · Game Industry Observatory">
   <section class="hero compact">
     <p class="eyebrow">Improve the evidence base</p>
-    <h1>Suggest a source</h1>
-    <p class="lede">Know a credible feed, tracker, dataset or publication we should monitor? Send it for review through a public GitHub issue.</p>
+    <h1>Propose a source</h1>
+    <p class="lede">Suggest a feed, tracker, dataset or publication by proposing an edit to the public source registry. GitHub records your contribution and the repository owner reviews it before anything changes.</p>
   </section>
 
-  <div class="form-layout">
-    <form class="source-form panel" id="source-form">
-      <div class="field">
-        <label for="source-name">Source name</label>
-        <input id="source-name" name="sourceName" autocomplete="organization" required />
-      </div>
-      <div class="field">
-        <label for="source-url">Source URL</label>
-        <input id="source-url" name="sourceUrl" type="url" inputmode="url" placeholder="https://" required />
-      </div>
-      <div class="field">
-        <label for="category">Best-fit category</label>
-        <select id="category" name="category" required>
-          <option value="">Choose a category</option>
-          {NEWS_SOURCE_CATEGORIES.map((category) => <option value={category.name}>{category.name}</option>)}
-        </select>
-      </div>
-      <div class="field">
-        <label for="coverage">Market or region covered</label>
-        <input id="coverage" name="coverage" placeholder="For example: South Korea, mobile, global" required />
-      </div>
-      <div class="field">
-        <label for="reason">Why should we track it?</label>
-        <textarea id="reason" name="reason" rows="5" required></textarea>
-        <small>Describe the data it adds, how often it updates, and whether access is free.</small>
-      </div>
-      <div class="field">
-        <label for="relationship">Relationship to the source <span>(optional)</span></label>
-        <input id="relationship" name="relationship" placeholder="None, author, employee, contributor…" />
-      </div>
-      <button class="button" type="submit">Review submission on GitHub</button>
-      <p class="form-note">Nothing is sent yet. The button opens a pre-filled public GitHub issue so you can check it before submitting. A GitHub account is required.</p>
-      <noscript><p class="form-note">JavaScript is required to pre-fill the issue. You can instead <a href="https://github.com/phendriks/state-of-game-industry/issues/new?labels=source-suggestion">open a blank source suggestion</a>.</p></noscript>
-    </form>
+  <div class="form-layout contribution-layout">
+    <section class="panel contribution-steps">
+      <p class="eyebrow">GitHub contribution</p>
+      <h2>Edit the source registry</h2>
+      <ol>
+        <li>Sign in to GitHub and open the registry using the button below.</li>
+        <li>Find the best category and add one source entry using the existing format.</li>
+        <li>Select <strong>Propose changes</strong>, briefly explain why the source belongs, and open the pull request.</li>
+        <li>The repository owner reviews, discusses and either merges or declines the proposal.</li>
+      </ol>
+      <a class="button" href={registryEditUrl}>Edit the registry on GitHub</a>
+      <p class="form-note">For contributors without write access, GitHub creates a fork automatically. Your proposal cannot alter the live site until it is reviewed and merged.</p>
+    </section>
 
     <aside class="panel review-note">
-      <p class="eyebrow">What happens next</p>
-      <h2>Reviewed, then added</h2>
-      <ol>
-        <li>Your suggestion is posted publicly for traceability.</li>
-        <li>It is checked for relevance, reliability, access and duplicate coverage.</li>
-        <li>If accepted, it is added to the canonical news-source registry used by each reporting run.</li>
-      </ol>
-      <p>Submission does not guarantee inclusion. Paid, promotional or affiliated sources are welcome to be suggested, but the relationship should be disclosed.</p>
+      <p class="eyebrow">Entry format</p>
+      <h2>What to include</h2>
+      <pre class="source-example"><code>{`{
+  name: 'Source name',
+  url: 'https://example.com/',
+  coverage: 'What it measures',
+  cadence: 'Continuous'
+}`}</code></pre>
+      <p>Use one of the cadence values already supported by the registry: <strong>Continuous</strong>, <strong>Quarterly</strong>, <strong>Annual</strong> or <strong>Periodic</strong>.</p>
+      <p>In the pull-request description, mention geographic coverage, access restrictions and any relationship you have with the source.</p>
     </aside>
   </div>
-
-  <script>
-    const form = document.querySelector<HTMLFormElement>('#source-form');
-
-    if (form) form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (!form.reportValidity()) return;
-
-      const data = new FormData(form);
-      const value = (name: string) => String(data.get(name) ?? '').trim();
-      const sourceName = value('sourceName');
-      const issueBody = [
-        '## Suggested source',
-        '',
-        `- **Name:** ${sourceName}`,
-        `- **URL:** ${value('sourceUrl')}`,
-        `- **Category:** ${value('category')}`,
-        `- **Market or region:** ${value('coverage')}`,
-        `- **Relationship to source:** ${value('relationship') || 'None disclosed'}`,
-        '',
-        '## Why it should be tracked',
-        '',
-        value('reason'),
-        '',
-        '---',
-        '_Submitted through the Game Industry Observatory source form._'
-      ].join('\n');
-
-      const issueUrl = new URL('https://github.com/phendriks/state-of-game-industry/issues/new');
-      issueUrl.searchParams.set('title', `[Source suggestion] ${sourceName}`);
-      issueUrl.searchParams.set('body', issueBody);
-      issueUrl.searchParams.set('labels', 'source-suggestion');
-      window.location.href = issueUrl.toString();
-    });
-  </script>
 </BaseLayout>
