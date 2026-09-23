@@ -1,0 +1,29 @@
+---
+import '../styles/global.css';
+const { title = 'Game Industry Observatory', description = 'AI-assisted games-industry health reporting.' } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href={`${import.meta.env.BASE_URL}`}>Game Industry Observatory</a>
+      <nav>
+        <a href={`${import.meta.env.BASE_URL}`}>Latest</a>
+        <a href={`${import.meta.env.BASE_URL}history/`}>History</a>
+        <a href={`${import.meta.env.BASE_URL}methodology/`}>Methodology</a>
+        <a href={`${import.meta.env.BASE_URL}sources/`}>Sources</a>
+      </nav>
+    </header>
+    <main class="shell"><slot /></main>
+    <footer class="site-footer">
+      <strong>AI-generated industry aggregation.</strong>
+      Source coverage is weighted toward English-language, North American and European / Western-facing games-industry information. Data and AI-generated analysis may contain errors.
+    </footer>
+  </body>
+</html>

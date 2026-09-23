@@ -1,0 +1,23 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Disclosure from '../components/Disclosure.astro';
+const reports = (await getCollection('reports')).sort((a,b) => b.data.published.getTime() - a.data.published.getTime());
+const latest = reports[0];
+const { Content } = await render(latest);
+---
+<BaseLayout title="Game Industry Observatory">
+  <section class="hero">
+    <p class="eyebrow">Latest snapshot</p>
+    <h1>{latest.data.title}</h1>
+    <p class="lede">A recurring AI-assisted view of games-industry health across employment, professional sentiment, consumer demand, company performance and major industry events.</p>
+    <div class="meta"><span>{latest.data.published.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}</span><span>Baseline: {latest.data.history_baseline ? 'yes' : 'no'}</span></div>
+  </section>
+  <Disclosure />
+  <section class="quick-links">
+    <a class="card" href={`${import.meta.env.BASE_URL}history/`}><strong>History</strong><span>See how the observed metrics change over time.</span></a>
+    <a class="card" href={`${import.meta.env.BASE_URL}methodology/`}><strong>Methodology</strong><span>Understand scope, limitations and AI provenance.</span></a>
+    <a class="card" href={`${import.meta.env.BASE_URL}reports/${latest.id}/`}><strong>Permanent report</strong><span>Open this snapshot at its stable URL.</span></a>
+  </section>
+  <article class="report prose"><Content /></article>
+</BaseLayout>

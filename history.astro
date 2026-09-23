@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sparkline from '../components/Sparkline.astro';
+const reports = (await getCollection('reports')).sort((a,b) => a.data.published.getTime() - b.data.published.getTime());
+const dates = reports.map(r => r.data.published.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}));
+// These indices intentionally start at 100 on the first report. Future reports can expose stable frontmatter metrics once the scoring formulas are frozen.
+const baselineSeries = reports.map(() => 100);
+---
+<BaseLayout title="History · Game Industry Observatory">
+  <section class="hero compact"><p class="eyebrow">Longitudinal view</p><h1>Industry history</h1><p class="lede">The Observatory's own longitudinal series starts on 23 September 2026. Earlier facts may appear in reports as context, but are not backfilled into the Observatory's sentiment timeline.</p></section>
+  <section class="panel">
+    <h2>Signal index</h2>
+    <p class="muted">One report exists so far, so the chart is intentionally a baseline point rather than a fabricated trend.</p>
+    <Sparkline values={baselineSeries} label="Relative industry signal baseline" />
+    <div class="axis-labels">{dates.map(d => <span>{d}</span>)}</div>
+  </section>
+  <section class="panel"><h2>Reports</h2><div class="report-list">{reports.slice().reverse().map(r => <a href={`${import.meta.env.BASE_URL}reports/${r.id}/`}><span>{r.data.title}</span><time>{r.data.published.toLocaleDateString('en-GB')}</time></a>)}</div></section>
+</BaseLayout>

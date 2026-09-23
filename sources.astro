@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const groups = [
+  ['Employment & layoffs', ['GamingLayoffs.com','ASGC layoffs tracker','DevQuest hiring report','Game Developer layoffs & closures']],
+  ['Professional sentiment', ['GDC State of the Game Industry','IGDA Developer Satisfaction Survey']],
+  ['Consumer & critical reception', ['Reddit gaming communities','Steam user reviews','Metacritic','OpenCritic']],
+  ['Commercial performance', ['Official publisher disclosures','VG Insights / Sensor Tower','Gamalytic']],
+  ['Corporate & financial', ['Company investor relations','SEC EDGAR','Yahoo Finance / market-price sources']],
+  ['Macro & capital', ['Newzoo','BCG','Bain','Drake Star gaming reports']]
+];
+---
+<BaseLayout title="Sources · Game Industry Observatory">
+  <section class="hero compact"><p class="eyebrow">Evidence base</p><h1>Source universe</h1><p class="lede">Sources are inputs, not guarantees. Availability, automation compatibility and geographic coverage differ materially.</p></section>
+  <div class="source-grid">{groups.map(([name, items]) => <section class="panel"><h2>{name}</h2><ul>{items.map(item => <li>{item}</li>)}</ul></section>)}</div>
+</BaseLayout>
