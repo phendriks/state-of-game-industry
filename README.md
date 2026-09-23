@@ -8,11 +8,11 @@ A static, AI-assisted games-industry health dashboard built from individually in
 - The homepage automatically renders the newest report.
 - `/reports/YYYY-MM-DD/` provides permanent historical report pages.
 - `/history/` renders longitudinal views from the report collection.
-- GitHub keeps a complete version history of every report and methodology change.
+- GitHub is used to keep history of every report and methodology change.
 
 ## AI and coverage disclosure
 
-Reports are generated using ChatGPT-assisted automated/semi-automated aggregation and are not represented as hand-collected journalism. Current source coverage is disproportionately English-language, North American and European / Western-facing. Asian and other non-Western markets are not yet covered with equivalent depth. Data, source material, extraction, classification, sentiment analysis and AI summaries may contain errors.
+Reports are generated using ChatGPT-assisted semi-automated aggregation and are not represented as hand-collected journalism. Current source coverage is disproportionately English-language, North American and European / Western-facing. Asian and other non-Western markets are not covered with equivalent depth. Data, source material, extraction, classification, sentiment analysis and AI summaries may contain errors.
 
 ## Local development
 
