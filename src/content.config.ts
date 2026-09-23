@@ -23,15 +23,7 @@ const reportSchema = z.object({
     kind: z.enum(['Reported', 'Forecast', 'Estimate']),
     observed_on: z.coerce.date(),
     source: z.string(),
-    featured: z.boolean().default(false),
-    tone: z.enum(['positive', 'negative', 'mixed', 'neutral'])
-  })),
-  signals: z.array(z.object({
-    label: z.string(),
-    reading: z.string(),
-    evidence: z.string(),
-    confidence: z.enum(['High', 'Medium-high', 'Medium', 'Low']),
-    tone: z.enum(['positive', 'negative', 'mixed', 'neutral'])
+    featured: z.boolean().default(false)
   }))
 }).superRefine((report, context) => {
   if (report.human_reviewed && !report.reviewer) {

@@ -1,12 +1,10 @@
 ---
-type Tone = 'positive' | 'negative' | 'mixed' | 'neutral';
-type Metric = { label: string; display_value: string; detail: string; featured: boolean; tone: Tone };
-type Signal = { label: string; reading: string; evidence: string; confidence: string; tone: Tone };
+type Metric = { label: string; display_value: string; detail: string; featured: boolean };
 
-interface Props { report: { data: { metrics: Metric[]; signals: Signal[] } } }
+interface Props { report: { data: { metrics: Metric[] } } }
 
 const { report } = Astro.props;
-const { signals = [], metrics = [] } = report.data;
+const { metrics = [] } = report.data;
 const featuredMetrics = metrics.filter((metric) => metric.featured);
 ---
 <section class="snapshot" aria-labelledby="snapshot-title">
@@ -17,7 +15,7 @@ const featuredMetrics = metrics.filter((metric) => metric.featured);
 
   <div class="metric-grid">
     {featuredMetrics.map((metric) => (
-      <article class={`metric metric--${metric.tone}`}>
+      <article class="metric">
         <p>{metric.label}</p>
         <strong>{metric.display_value}</strong>
         <span>{metric.detail}</span>
@@ -25,20 +23,4 @@ const featuredMetrics = metrics.filter((metric) => metric.featured);
     ))}
   </div>
 
-  <div class="signal-board" role="table" aria-label="Current industry signals">
-    <div class="signal-row signal-row--head" role="row">
-      <span role="columnheader">Signal</span>
-      <span role="columnheader">Reading</span>
-      <span role="columnheader">Evidence</span>
-      <span role="columnheader">Confidence</span>
-    </div>
-    {signals.map((signal) => (
-      <div class="signal-row" role="row">
-        <strong role="cell">{signal.label}</strong>
-        <span role="cell"><span class={`status status--${signal.tone}`}>{signal.reading}</span></span>
-        <span class="signal-evidence" role="cell">{signal.evidence}</span>
-        <span class="confidence" role="cell">{signal.confidence}</span>
-      </div>
-    ))}
-  </div>
 </section>

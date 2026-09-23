@@ -6,12 +6,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <article class="prose panel">
     <h2>Production method</h2>
     <p>Reports are generated using ChatGPT-assisted automated and semi-automated aggregation of publicly accessible sources. They are not presented as hand-collected, hand-written or manually aggregated journalism.</p>
+    <p>Structured metrics and source evidence are collected before explanatory text is produced. AI-written language is not used to create the underlying measurements.</p>
+    <h2>Human review</h2>
+    <p>Every report declares whether it has been reviewed by a person. A report marked as human-reviewed must also identify its reviewer. Review improves confidence but is not presented as an independent audit.</p>
+    <h2>Data classifications</h2>
+    <ul>
+      <li><strong>Reported</strong> means a figure was published or directly counted by the named source.</li>
+      <li><strong>Forecast</strong> means a source's forward-looking projection.</li>
+      <li><strong>Estimate</strong> means a third-party calculation rather than an official disclosure.</li>
+    </ul>
+    <p>These classifications remain separate. The Observatory does not combine them into a composite health score or synthetic sentiment index.</p>
+    <h2>Collection rules</h2>
+    <ul>
+      <li>Commercial results distinguish official disclosures from third-party estimates.</li>
+      <li>Layoff totals are treated as minimums when companies do not disclose affected headcount.</li>
+      <li>Open-job counts measure advertised demand, not completed hiring.</li>
+      <li>Quarterly financial results and annual surveys retain their original cadence rather than being treated as new fortnightly observations.</li>
+      <li>Community discussion is sampled consistently and separated by subject: game, studio, publisher or industry.</li>
+      <li>LinkedIn is supplementary context rather than a scraping dependency.</li>
+    </ul>
     <h2>Scope</h2>
     <p>The source set is currently strongest for English-language, North American and European / Western-facing games-industry reporting, public-company disclosures, professional discussion and consumer communities.</p>
     <p>China, Japan, South Korea, Southeast Asia and other markets are not yet covered with equivalent depth. Private companies, mobile-first ecosystems, non-English professional communities and smaller studios may also be underrepresented.</p>
     <h2>Uncertainty</h2>
-    <p>Original sources may be incomplete or wrong, and automated extraction, classification and generative summarization can introduce additional errors. Sentiment analysis is particularly uncertain around sarcasm, humor, memes, mixed targets, translation and community-specific context.</p>
+    <p>Original sources may be incomplete or wrong, and automated extraction, classification and generative summarization can introduce additional errors. Community sentiment is particularly uncertain around sarcasm, humor, memes, mixed targets, translation and community-specific context.</p>
     <h2>Interpretation</h2>
-    <p>Multiple sources are compared where practical, but aggregation does not guarantee truth or representativeness. Estimates are separated from reported figures. Observed relationships are not treated as proof of causation.</p>
+    <p>Multiple sources are compared where practical, but aggregation does not guarantee truth or representativeness. Observed relationships are not treated as proof of causation. Readers should verify consequential claims against the linked primary source.</p>
   </article>
 </BaseLayout>
