@@ -13,10 +13,17 @@ const reportSchema = z.object({
   global_representativeness: z.string(),
   independently_audited: z.boolean().default(false),
   summary: z.string(),
-  key_metrics: z.array(z.object({
+  metrics: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
     label: z.string(),
-    value: z.string(),
+    value: z.number(),
+    display_value: z.string(),
     detail: z.string(),
+    category: z.enum(['Market', 'Players', 'Employment']),
+    kind: z.enum(['Reported', 'Forecast', 'Estimate']),
+    observed_on: z.coerce.date(),
+    source: z.string(),
+    featured: z.boolean().default(false),
     tone: z.enum(['positive', 'negative', 'mixed', 'neutral'])
   })),
   signals: z.array(z.object({

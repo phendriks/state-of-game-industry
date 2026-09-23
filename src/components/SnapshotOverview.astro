@@ -1,12 +1,13 @@
 ---
 type Tone = 'positive' | 'negative' | 'mixed' | 'neutral';
-type Metric = { label: string; value: string; detail: string; tone: Tone };
+type Metric = { label: string; display_value: string; detail: string; featured: boolean; tone: Tone };
 type Signal = { label: string; reading: string; evidence: string; confidence: string; tone: Tone };
 
-interface Props { report: { data: { key_metrics: Metric[]; signals: Signal[] } } }
+interface Props { report: { data: { metrics: Metric[]; signals: Signal[] } } }
 
 const { report } = Astro.props;
-const { signals = [], key_metrics: keyMetrics = [] } = report.data;
+const { signals = [], metrics = [] } = report.data;
+const featuredMetrics = metrics.filter((metric) => metric.featured);
 ---
 <section class="snapshot" aria-labelledby="snapshot-title">
   <div class="section-heading">
@@ -15,10 +16,10 @@ const { signals = [], key_metrics: keyMetrics = [] } = report.data;
   </div>
 
   <div class="metric-grid">
-    {keyMetrics.map((metric) => (
+    {featuredMetrics.map((metric) => (
       <article class={`metric metric--${metric.tone}`}>
         <p>{metric.label}</p>
-        <strong>{metric.value}</strong>
+        <strong>{metric.display_value}</strong>
         <span>{metric.detail}</span>
       </article>
     ))}

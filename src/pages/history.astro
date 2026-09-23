@@ -1,19 +1,85 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Sparkline from '../components/Sparkline.astro';
-const reports = (await getCollection('reports')).sort((a,b) => a.data.published.getTime() - b.data.published.getTime());
-const dates = reports.map(r => r.data.published.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}));
-// These indices intentionally start at 100 on the first report. Future reports can expose stable frontmatter metrics once the scoring formulas are frozen.
-const baselineSeries = reports.map(() => 100);
+
+type Metric = {
+  id: string;
+  label: string;
+  display_value: string;
+  detail: string;
+  category: 'Market' | 'Players' | 'Employment';
+  kind: 'Reported' | 'Forecast' | 'Estimate';
+  observed_on: Date;
+  source: string;
+};
+
+const reports = (await getCollection('reports')).sort(
+  (a, b) => a.data.published.getTime() - b.data.published.getTime()
+);
+
+const rows = new Map<string, { metric: Metric; values: Map<string, Metric> }>();
+
+for (const report of reports) {
+  for (const metric of report.data.metrics) {
+    const row = rows.get(metric.id) ?? { metric, values: new Map<string, Metric>() };
+    row.metric = metric;
+    row.values.set(report.id, metric);
+    rows.set(metric.id, row);
+  }
+}
+
+const categoryOrder = { Market: 0, Players: 1, Employment: 2 };
+const metricRows = [...rows.values()].sort((a, b) =>
+  categoryOrder[a.metric.category] - categoryOrder[b.metric.category]
+  || a.metric.label.localeCompare(b.metric.label)
+);
 ---
-<BaseLayout title="History · Game Industry Observatory">
-  <section class="hero compact"><p class="eyebrow">Longitudinal view</p><h1>Industry history</h1><p class="lede">The Observatory's own longitudinal series starts on 23 September 2026. Earlier facts may appear in reports as context, but are not backfilled into the Observatory's sentiment timeline.</p></section>
-  <section class="panel">
-    <h2>Signal index</h2>
-    <p class="muted">One report exists so far, so the chart is intentionally a baseline point rather than a fabricated trend.</p>
-    <Sparkline values={baselineSeries} label="Relative industry signal baseline" />
-    <div class="axis-labels">{dates.map(d => <span>{d}</span>)}</div>
+<BaseLayout title="Hard data · Game Industry Observatory">
+  <section class="hero compact">
+    <p class="eyebrow">Longitudinal evidence</p>
+    <h1>Hard data history</h1>
+    <p class="lede">Source-level figures stored with each report. Values are kept separate and compared over time—there is no composite score or synthetic baseline.</p>
   </section>
-  <section class="panel"><h2>Reports</h2><div class="report-list">{reports.slice().reverse().map(r => <a href={`${import.meta.env.BASE_URL}reports/${r.id}/`}><span>{r.data.title}</span><time>{r.data.published.toLocaleDateString('en-GB')}</time></a>)}</div></section>
+
+  <section class="data-key" aria-label="Data classifications">
+    <div><strong>Reported</strong><span>A figure published or directly counted by the named source.</span></div>
+    <div><strong>Forecast</strong><span>A source's forward-looking projection, clearly separated from reported results.</span></div>
+    <div><strong>Estimate</strong><span>A third-party estimate rather than an official disclosure.</span></div>
+  </section>
+
+  <section class="panel data-panel">
+    <div class="data-heading">
+      <div><p class="eyebrow">Tracked metrics</p><h2>{metricRows.length} series</h2></div>
+      <p>Each dated column is sourced from its corresponding report. “Observed” records when the underlying figure applied, which may differ from the report date.</p>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Type</th>
+            <th>Source and context</th>
+            {reports.map((report) => (
+              <th><a href={`${import.meta.env.BASE_URL}reports/${report.id}/`}>{report.data.published.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</a></th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {metricRows.map(({ metric, values }) => (
+            <tr>
+              <td><span class="data-category">{metric.category}</span><strong>{metric.label}</strong></td>
+              <td><span class={`data-kind data-kind--${metric.kind.toLowerCase()}`}>{metric.kind}</span></td>
+              <td><strong>{metric.source}</strong><small>{metric.detail}</small></td>
+              {reports.map((report) => {
+                const value = values.get(report.id);
+                return <td class="data-value">{value ? <><strong>{value.display_value}</strong><small>Observed {value.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></> : <span>—</span>}</td>;
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel"><h2>Reports</h2><div class="report-list">{reports.slice().reverse().map((report) => <a href={`${import.meta.env.BASE_URL}reports/${report.id}/`}><span>{report.data.title}</span><time>{report.data.published.toLocaleDateString('en-GB')}</time></a>)}</div></section>
 </BaseLayout>

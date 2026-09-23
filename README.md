@@ -9,7 +9,7 @@ A static, AI-assisted games-industry health dashboard built from individually in
 - `src/data/reports/YYYY-MM-DD.md` is the canonical artifact for each observation period.
 - The homepage automatically renders the latest bi-weekly report.
 - `/reports/YYYY-MM-DD/` provides permanent historical report pages.
-- `/history/` renders longitudinal views from the report collection.
+- `/history/` tracks the raw reported, forecast and estimated metrics stored with each report; it does not calculate a composite index.
 - `src/data/newsSources.ts` is the canonical source registry and required starting input for every reporting run.
 - `/sources/` publishes that registry; `/submit-source/` guides contributors through a reviewable pull request.
 - GitHub is used to keep history of every report and methodology change.
