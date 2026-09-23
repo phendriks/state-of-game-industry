@@ -5,7 +5,7 @@ A static, AI-assisted games-industry health dashboard built from individually in
 ## Publishing model
 
 - `src/data/reports/YYYY-MM-DD.md` is the canonical artifact for each observation period.
-- The homepage automatically renders the newest report.
+- The homepage automatically renders the latest bi-weekly report.
 - `/reports/YYYY-MM-DD/` provides permanent historical report pages.
 - `/history/` renders longitudinal views from the report collection.
 - GitHub is used to keep history of every report and methodology change.
