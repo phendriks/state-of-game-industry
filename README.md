@@ -1,5 +1,6 @@
 # Game Industry Observatory
 
+https://phendriks.github.io/state-of-game-industry/
 A static, AI-assisted games-industry health dashboard built from individually inspectable Markdown reports.
 
 ## Publishing model
