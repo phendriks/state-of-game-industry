@@ -1,0 +1,55 @@
+---
+import { NEWS_SOURCES } from '../data/newsSources';
+
+type Metric = {
+  label: string;
+  display_value: string;
+  detail: string;
+  scope: string;
+  category: 'Market' | 'Players' | 'Employment' | 'Business' | 'Corporate' | 'Products';
+  kind: 'Reported' | 'Calculated' | 'Forecast' | 'Estimate';
+  observed_on: Date;
+  source: string;
+  calculation?: string;
+  inputs?: { label: string; display_value: string }[];
+};
+
+interface Props { report: { data: { metrics: Metric[] } } }
+
+const { report } = Astro.props;
+const sourceUrls = new Map(NEWS_SOURCES.map((source) => [source.name, source.url]));
+const categoryOrder: Metric['category'][] = ['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products'];
+const groups = categoryOrder
+  .map((category) => ({ category, metrics: report.data.metrics.filter((metric) => metric.category === category) }))
+  .filter((group) => group.metrics.length > 0);
+---
+<section class="report-data" aria-labelledby="report-data-title">
+  <div class="report-data-heading">
+    <p class="eyebrow">Source-backed observations</p>
+    <h2 id="report-data-title">Hard data</h2>
+    <p>Figures retain their original scope and observation date. Company measures are presented individually and are not a ranking.</p>
+  </div>
+
+  {groups.map(({ category, metrics }) => (
+    <section class="report-data-group" aria-labelledby={`report-data-${category.toLowerCase()}`}>
+      <h3 id={`report-data-${category.toLowerCase()}`}>{category}</h3>
+      <div class="report-data-table-wrap">
+        <table class="report-data-table">
+          <thead><tr><th>Measure</th><th>Value</th><th>Scope and context</th><th>Type</th><th>Observed</th><th>Source</th></tr></thead>
+          <tbody>
+            {metrics.map((metric) => (
+              <tr>
+                <td><strong>{metric.label}</strong></td>
+                <td class="report-data-value"><strong>{metric.display_value}</strong></td>
+                <td>{metric.scope}<small>{metric.detail}</small>{metric.calculation && <small>Calculation: {metric.calculation}</small>}{metric.inputs && <small>Inputs: {metric.inputs.map((input) => `${input.label} ${input.display_value}`).join('; ')}</small>}</td>
+                <td><span class={`data-kind data-kind--${metric.kind.toLowerCase()}`}>{metric.kind}</span></td>
+                <td>{metric.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                <td><a href={sourceUrls.get(metric.source)}>{metric.source}</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+</section>

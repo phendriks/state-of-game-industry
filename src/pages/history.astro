@@ -1,16 +1,20 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { NEWS_SOURCES } from '../data/newsSources';
 
 type Metric = {
   id: string;
   label: string;
   display_value: string;
   detail: string;
-  category: 'Market' | 'Players' | 'Employment';
-  kind: 'Reported' | 'Forecast' | 'Estimate';
+  scope: string;
+  category: 'Market' | 'Players' | 'Employment' | 'Business' | 'Corporate' | 'Products';
+  kind: 'Reported' | 'Calculated' | 'Forecast' | 'Estimate';
   observed_on: Date;
   source: string;
+  calculation?: string;
+  inputs?: { label: string; display_value: string }[];
 };
 
 const reports = (await getCollection('reports')).sort(
@@ -28,7 +32,8 @@ for (const report of reports) {
   }
 }
 
-const categoryOrder = { Market: 0, Players: 1, Employment: 2 };
+const categoryOrder = { Market: 0, Players: 1, Employment: 2, Business: 3, Corporate: 4, Products: 5 };
+const sourceUrls = new Map(NEWS_SOURCES.map((source) => [source.name, source.url]));
 const metricRows = [...rows.values()].sort((a, b) =>
   categoryOrder[a.metric.category] - categoryOrder[b.metric.category]
   || a.metric.label.localeCompare(b.metric.label)
@@ -43,6 +48,7 @@ const metricRows = [...rows.values()].sort((a, b) =>
 
   <section class="data-key" aria-label="Data classifications">
     <div><strong>Reported</strong><span>A figure published or directly counted by the named source.</span></div>
+    <div><strong>Calculated</strong><span>A transparent arithmetic result stored with its formula and inputs.</span></div>
     <div><strong>Forecast</strong><span>A source's forward-looking projection, clearly separated from reported results.</span></div>
     <div><strong>Estimate</strong><span>A third-party estimate rather than an official disclosure.</span></div>
   </section>
@@ -69,7 +75,7 @@ const metricRows = [...rows.values()].sort((a, b) =>
             <tr>
               <td><span class="data-category">{metric.category}</span><strong>{metric.label}</strong></td>
               <td><span class={`data-kind data-kind--${metric.kind.toLowerCase()}`}>{metric.kind}</span></td>
-              <td><strong>{metric.source}</strong><small>{metric.detail}</small></td>
+              <td><strong><a href={sourceUrls.get(metric.source)}>{metric.source}</a></strong><small>{metric.scope}</small><small>{metric.detail}</small>{metric.calculation && <small>Calculation: {metric.calculation}</small>}{metric.inputs && <small>Inputs: {metric.inputs.map((input) => `${input.label} ${input.display_value}`).join('; ')}</small>}</td>
               {reports.map((report) => {
                 const value = values.get(report.id);
                 return <td class="data-value">{value ? <><strong>{value.display_value}</strong><small>Observed {value.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></> : <span>—</span>}</td>;

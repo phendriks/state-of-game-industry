@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SnapshotOverview from '../components/SnapshotOverview.astro';
+import ReportDataTables from '../components/ReportDataTables.astro';
 const reports = (await getCollection('reports')).sort((a,b) => b.data.published.getTime() - a.data.published.getTime());
 const latest = reports[0];
 const { Content } = await render(latest);
@@ -22,7 +23,7 @@ const { Content } = await render(latest);
       <span><strong>Read the full report</strong><small>Employment, market, company and source tables</small></span>
       <span aria-hidden="true">Open report</span>
     </summary>
-    <article class="report prose"><Content /></article>
+    <article class="report prose"><Content /><ReportDataTables report={latest} /></article>
   </details>
   <section class="quick-links">
     <a class="card" href={`${import.meta.env.BASE_URL}history/`}><strong>Hard data</strong><span>Track source-level figures across reporting periods.</span></a>

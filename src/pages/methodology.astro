@@ -12,19 +12,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h2>Data classifications</h2>
     <ul>
       <li><strong>Reported</strong> means a figure was published or directly counted by the named source.</li>
+      <li><strong>Calculated</strong> means the Observatory performed transparent arithmetic using stored source values. The formula and at least two inputs must accompany the result.</li>
       <li><strong>Forecast</strong> means a source's forward-looking projection.</li>
       <li><strong>Estimate</strong> means a third-party calculation rather than an official disclosure.</li>
     </ul>
     <p>These classifications remain separate. The Observatory does not combine them into a composite health score or synthetic sentiment index.</p>
     <h2>Collection rules</h2>
     <ul>
+      <li>Every metric names a source in the public source registry, a scope and an observation date. Unregistered metric sources fail the site build.</li>
       <li>Commercial results distinguish official disclosures from third-party estimates.</li>
       <li>Layoff totals are treated as minimums when companies do not disclose affected headcount.</li>
-      <li>Open-job counts measure advertised demand, not completed hiring.</li>
+      <li>Open-job counts measure advertised demand, not completed hiring. A disappeared listing is called removed, never filled, unless the employer confirms a hire.</li>
+      <li>Where stable job identifiers are available, future reports retain additions, removals and 14/30/60/90-day listing survival. The first compatible observation is only a baseline.</li>
+      <li>Steam activity is collected at a consistent UTC time where practical. It measures one PC platform, not total players, sales or revenue.</li>
+      <li>Company births, dissolutions and insolvency states use official registers. Legal entities and self-selected industry codes are not treated as exact studio counts.</li>
+      <li>Public-company financial facts remain company-level series. Different segments, currencies and reporting periods are not combined into rankings.</li>
       <li>Quarterly financial results and annual surveys retain their original cadence rather than being treated as new fortnightly observations.</li>
       <li>Community discussion is sampled consistently and separated by subject: game, studio, publisher or industry.</li>
       <li>LinkedIn is supplementary context rather than a scraping dependency.</li>
     </ul>
+    <h2>Reporting format</h2>
+    <p>Each report contains one short industry summary. The remaining report is rendered from structured metrics rather than separately maintained prose and tables. AI assistance may condense the observations into the summary, but it may not manufacture, interpolate or silently recategorize a measurement.</p>
     <h2>Scope</h2>
     <p>The source set is currently strongest for English-language, North American and European / Western-facing games-industry reporting, public-company disclosures, professional discussion and consumer communities.</p>
     <p>China, Japan, South Korea, Southeast Asia and other markets are not yet covered with equivalent depth. Private companies, mobile-first ecosystems, non-English professional communities and smaller studios may also be underrepresented.</p>

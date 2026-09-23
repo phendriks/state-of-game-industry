@@ -23,7 +23,11 @@ export const NEWS_SOURCE_CATEGORIES: SourceCategory[] = [
       { name: 'Gaming Layoffs', url: 'https://gaminglayoffs.com/', coverage: 'Layoff announcements and totals', cadence: 'Continuous' },
       { name: 'ASGC layoffs tracker', url: 'https://layoffs.asgc.gg/', coverage: 'Layoff estimates and confirmed totals', cadence: 'Continuous' },
       { name: 'DevQuest hiring report', url: 'https://devquest.gg/game-industry-hiring-report', coverage: 'Roles, seniority and hiring concentration', cadence: 'Continuous' },
-      { name: 'Game Developer layoffs & closures', url: 'https://www.gamedeveloper.com/keyword/layoffs', coverage: 'Reported layoffs, closures and restructuring', cadence: 'Continuous' }
+      { name: 'Game Developer layoffs & closures', url: 'https://www.gamedeveloper.com/keyword/layoffs', coverage: 'Reported layoffs, closures and restructuring', cadence: 'Continuous' },
+      { name: 'Xbox Wire', url: 'https://news.xbox.com/', coverage: 'Official Xbox employment and corporate announcements', cadence: 'Continuous' },
+      { name: 'Insomniac careers', url: 'https://job-boards.greenhouse.io/insomniac', coverage: 'First-party studio vacancies', cadence: 'Continuous' },
+      { name: 'US WARN guidance', url: 'https://www.dol.gov/agencies/eta/layoffs/employers', coverage: 'Rules and state contacts for qualifying mass-layoff notices; no national dataset', cadence: 'Continuous' },
+      { name: 'US foreign labor performance data', url: 'https://www.dol.gov/agencies/eta/foreign-labor/performance', coverage: 'Quarterly LCA and permanent-labour application records, wages and worksites', cadence: 'Quarterly' }
     ]
   },
   {
@@ -37,9 +41,11 @@ export const NEWS_SOURCE_CATEGORIES: SourceCategory[] = [
   },
   {
     id: 'consumer',
-    name: 'Consumer & critical reception',
-    description: 'Player discussion, user reviews and professional review aggregates.',
+    name: 'Player activity & reception',
+    description: 'Direct platform activity, player discussion, user reviews and professional review aggregates.',
     sources: [
+      { name: 'Steam player statistics', url: 'https://store.steampowered.com/stats/stats/', coverage: 'Concurrent Steam users and game-level player counts', cadence: 'Continuous' },
+      { name: 'Twitch API', url: 'https://dev.twitch.tv/docs/api/reference', coverage: 'Live game-category viewers, streams and languages', cadence: 'Continuous' },
       { name: 'Reddit gaming communities', url: 'https://www.reddit.com/r/gaming/', coverage: 'Community discussion and consumer sentiment', cadence: 'Continuous' },
       { name: 'Steam user reviews', url: 'https://store.steampowered.com/', coverage: 'Verified-platform user reception', cadence: 'Continuous' },
       { name: 'Metacritic', url: 'https://www.metacritic.com/game/', coverage: 'Critic and user review aggregates', cadence: 'Continuous' },
@@ -68,7 +74,9 @@ export const NEWS_SOURCE_CATEGORIES: SourceCategory[] = [
       { name: 'Square Enix Investor Relations', url: 'https://www.hd.square-enix.com/eng/ir/', coverage: 'Segment sales, earnings and guidance', cadence: 'Quarterly' },
       { name: 'Nintendo Investor Relations', url: 'https://www.nintendo.co.jp/ir/en/', coverage: 'Hardware, software and financial results', cadence: 'Quarterly' },
       { name: 'Take-Two Investor Relations', url: 'https://www.take2games.com/ir', coverage: 'Bookings, guidance and corporate announcements', cadence: 'Quarterly' },
-      { name: 'SEC EDGAR', url: 'https://www.sec.gov/edgar/search/', coverage: 'US public-company filings', cadence: 'Continuous' },
+      { name: 'SEC EDGAR', url: 'https://www.sec.gov/search-filings/edgar-application-programming-interfaces', coverage: 'US public-company filings and standardized XBRL facts', cadence: 'Continuous' },
+      { name: 'Companies House API', url: 'https://developer.company-information.service.gov.uk/', coverage: 'UK company incorporations, dissolutions and legal status', cadence: 'Continuous' },
+      { name: 'Eurostat business demography', url: 'https://ec.europa.eu/eurostat/en/web/business-demography', coverage: 'European enterprise births, deaths, survival and employment', cadence: 'Annual' },
       { name: 'Yahoo Finance', url: 'https://finance.yahoo.com/', coverage: 'Market prices and company-level market data', cadence: 'Continuous' }
     ]
   },

@@ -1,5 +1,5 @@
 ---
-type Metric = { label: string; display_value: string; detail: string; featured: boolean };
+type Metric = { label: string; display_value: string; detail: string; kind: string; source: string; featured: boolean };
 
 interface Props { report: { data: { metrics: Metric[] } } }
 
@@ -19,6 +19,7 @@ const featuredMetrics = metrics.filter((metric) => metric.featured);
         <p>{metric.label}</p>
         <strong>{metric.display_value}</strong>
         <span>{metric.detail}</span>
+        <small>{metric.kind} · {metric.source}</small>
       </article>
     ))}
   </div>
