@@ -2,6 +2,6 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   site: 'https://phendriks.github.io',
-  base: '/games-industry-observatory',
+  base: '/state-of-game-industry',
   trailingSlash: 'always'
 });
