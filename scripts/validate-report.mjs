@@ -1,7 +1,9 @@
 import path from 'node:path';
 import { NEWS_SOURCES } from '../src/data/newsSources.ts';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from '../src/data/snapshotIndicators.ts';
-import { REPORTS_DIR, amsterdamDate, readReport, reportWindow } from './report-lib.mjs';
+import { STATISTICAL_SOURCES } from '../src/data/statisticalSources.ts';
+import { TALENT_SNAPSHOT_INDICATORS } from '../src/data/talentIndicators.ts';
+import { REPORTS_DIR, amsterdamDate, hostnameMatches, readReport, reportWindow } from './report-lib.mjs';
 
 const requestedDate = process.argv.find((arg) => arg.startsWith('--report-date='))?.split('=')[1];
 const reportDate = requestedDate ?? amsterdamDate();
@@ -10,6 +12,7 @@ const file = path.join(REPORTS_DIR, `${reportDate}.md`);
 const { data, body } = await readReport(file);
 const errors = [];
 const sources = new Set(NEWS_SOURCES.map((source) => source.name));
+const statisticalSources = new Map(STATISTICAL_SOURCES.map((source) => [source.id, source]));
 
 if (String(data.published) !== expected.published) errors.push('published does not match the file date');
 if (String(data.period_start) !== expected.periodStart) errors.push(`period_start must be ${expected.periodStart}`);
@@ -20,6 +23,51 @@ if (data.snapshot) {
   const snapshotKeys = Object.keys(data.snapshot);
   const unexpectedKeys = snapshotKeys.filter((key) => !SNAPSHOT_INDICATOR_KEYS.includes(key));
   if (unexpectedKeys.length) errors.push(`unexpected snapshot indicators: ${unexpectedKeys.join(', ')}`);
+}
+
+const statisticalIds = new Set();
+for (const [index, observation] of (data.statistical_observations ?? []).entries()) {
+  if (statisticalIds.has(observation.id)) errors.push(`duplicate statistical observation id: ${observation.id}`);
+  statisticalIds.add(observation.id);
+  const source = statisticalSources.get(observation.source_id);
+  if (!source) errors.push(`statistical observation ${index + 1} uses an unregistered source: ${observation.source_id}`);
+  if (source && !hostnameMatches(observation.source_url, source.url)) {
+    errors.push(`statistical observation ${observation.id} does not use its registered official source domain`);
+  }
+  if (!Number.isFinite(observation.original_value)) errors.push(`statistical observation ${observation.id} has no finite numeric value`);
+  if (!observation.label || !observation.display_value || !observation.reference_period || !observation.observed_on) {
+    errors.push(`statistical observation ${observation.id} lacks required display or period context`);
+  }
+  if (observation.observed_on > expected.periodEnd) errors.push(`statistical observation ${observation.id} is dated after the report period`);
+  if (observation.release_date && observation.release_date > expected.periodEnd) errors.push(`statistical observation ${observation.id} was released after the report period`);
+  if (!observation.source_url || !observation.evidence_excerpt || !observation.methodology_version) {
+    errors.push(`statistical observation ${observation.id} lacks provenance`);
+  }
+  if (observation.evidence_excerpt?.trim().split(/\s+/).length > 25) {
+    errors.push(`statistical observation ${observation.id} evidence excerpt exceeds 25 words`);
+  }
+  const indicator = TALENT_SNAPSHOT_INDICATORS.find((candidate) => candidate.measure === observation.measure);
+  if (!indicator || indicator.precision !== observation.precision_class) {
+    errors.push(`statistical observation ${observation.id} has an unsupported measure or precision`);
+  }
+}
+
+if (data.talent_pipeline) {
+  const observationsById = new Map((data.statistical_observations ?? []).map((observation) => [observation.id, observation]));
+  const references = [
+    ['game_program_entrants', data.talent_pipeline.entrants],
+    ['annual_game_specific_graduates', data.talent_pipeline.graduate_supply],
+    ['workforce_contraction', data.talent_pipeline.workforce_flow?.workforce_contraction],
+    ['industry_outflow', data.talent_pipeline.workforce_flow?.industry_outflow]
+  ].filter(([, reference]) => Boolean(reference));
+  for (const [expectedMeasure, reference] of references) {
+    for (const observationId of reference.observation_ids ?? []) {
+      if (!statisticalIds.has(observationId)) errors.push(`talent snapshot references missing observation ${observationId}`);
+      if (observationsById.get(observationId)?.measure !== expectedMeasure) {
+        errors.push(`talent snapshot ${expectedMeasure} references incompatible observation ${observationId}`);
+      }
+    }
+  }
 }
 
 const ids = new Set();

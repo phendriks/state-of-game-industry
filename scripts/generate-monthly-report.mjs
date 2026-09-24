@@ -3,6 +3,8 @@ import path from 'node:path';
 import OpenAI from 'openai';
 import { NEWS_SOURCE_CATEGORIES } from '../src/data/newsSources.ts';
 import { SNAPSHOT_INDICATORS } from '../src/data/snapshotIndicators.ts';
+import { STATISTICAL_SOURCES } from '../src/data/statisticalSources.ts';
+import { TALENT_SNAPSHOT_INDICATORS } from '../src/data/talentIndicators.ts';
 import {
   CATEGORY_LIMITS, REPORTS_DIR, RETENTION_DAYS, amsterdamDate, dayDifference,
   hostnameMatches, latestReport, reportWindow, writeReport
@@ -130,77 +132,6 @@ console.log(`Authentication: ${process.env.OPENAI_IDENTITY_PROVIDER_ID ? 'OpenAI
 const snapshotTargets = SNAPSHOT_INDICATORS
   .map(({ key, label }) => `- ${key}: ${label}`)
   .join('\n');
-const previousBySource = new Map();
-for (const metric of previous.data.metrics ?? []) {
-  const list = previousBySource.get(metric.source) ?? [];
-  list.push(metric);
-  previousBySource.set(metric.source, list);
-}
-
-const observationSchema = {
-  type: 'object', additionalProperties: false,
-  properties: {
-    observations: {
-      type: 'array', maxItems: 8,
-      items: {
-        type: 'object', additionalProperties: false,
-        properties: {
-          id: { type: 'string', pattern: '^[a-z0-9_]+$' },
-          label: { type: 'string' }, value: { type: 'number' }, display_value: { type: 'string' },
-          detail: { type: 'string' }, scope: { type: 'string' }, unit: { type: ['string', 'null'] },
-          category: { type: 'string', enum: ['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products'] },
-          kind: { type: 'string', enum: ['Reported', 'Forecast', 'Estimate'] },
-          observed_on: { type: 'string' }, period_start: { type: ['string', 'null'] },
-          period_end: { type: ['string', 'null'] }, published_on: { type: 'string' },
-          source: { type: 'string' }, origin: { type: ['string', 'null'] },
-          source_relationship: { type: ['string', 'null'], enum: ['Original source', 'Repeats / cites', 'First-party', 'Owned by', 'Funded by', 'Independent reporting', 'Unknown', null] },
-          source_url: { type: 'string' }, evidence_excerpt: { type: 'string' }
-        },
-        required: ['id','label','value','display_value','detail','scope','unit','category','kind','observed_on','period_start','period_end','published_on','source','origin','source_relationship','source_url','evidence_excerpt']
-      }
-    }
-  }, required: ['observations']
-};
-
-async function collectCategory(group) {
-  const sources = group.sources.map((source) => ({
-    name: source.name, canonical_url: source.url, coverage: source.coverage,
-    language: source.language, previous_metrics: previousBySource.get(source.name) ?? []
-  }));
-  const response = await withTemporaryRetry(`Source group "${group.name}"`, () => client.responses.create({
-    model,
-    reasoning: { effort: 'low' },
-    tools: [{ type: 'web_search', search_context_size: 'low' }],
-    text: { format: { type: 'json_schema', name: 'monthly_observations', strict: true, schema: observationSchema } },
-    input: `Find newly published, numeric games-industry observations for this reporting window: ${window.periodStart} through ${window.periodEnd}, inclusive.\n\nOnly use the registered sources below, preferably their first-party pages. Return an empty array when nothing verifiable is available. Every observation must be explicitly supported by the exact evidence URL and a short excerpt containing the value. Never calculate, infer, combine, extrapolate, or copy a claim from an unrelated secondary domain. published_on must fall inside the reporting window. observed_on is the date or period end the number describes and must not be changed to the collection date. Reuse a previous metric id when the scope and measure are genuinely the same; otherwise create a stable id without dates or quarter names. Keep incompatible scopes separate. Do not return narrative news without a numeric observation.\n\nPrioritize direct observations for these dashboard indicators. Use the exact id before the colon when an observation matches. These indicators must describe the overall market or a multi-company workforce dataset, never one company, developer, publisher or game:\n${snapshotTargets}\n\nRegistered ${group.name} sources:\n${JSON.stringify(sources)}`
-  }));
-  return JSON.parse(response.output_text).observations;
-}
-
-const collected = [];
-for (const group of NEWS_SOURCE_CATEGORIES) {
-  let observations;
-  try {
-    observations = await collectCategory(group);
-  } catch (error) {
-    const status = error?.status ? ` (HTTP ${error.status})` : '';
-    const code = error?.code ? ` [${error.code}]` : '';
-    throw new Error(`Collection failed for source group "${group.name}"${status}${code}: ${error?.message ?? error}`, { cause: error });
-  }
-  for (const metric of observations) {
-    const source = group.sources.find((candidate) => candidate.name === metric.source);
-    if (!source) continue;
-    if (metric.published_on < window.periodStart || metric.published_on > window.periodEnd) continue;
-    if (!hostnameMatches(metric.source_url, source.url)) continue;
-    if (metric.evidence_excerpt.trim().split(/\s+/).length > 25) continue;
-    collected.push({
-      ...Object.fromEntries(Object.entries(metric).filter(([, value]) => value !== null)),
-      collected_on: reportDate,
-      carried_forward: false
-    });
-  }
-}
-
 const previousSnapshotMetricIds = new Set(Object.values(previous.data.snapshot ?? {}));
 const snapshotCandidateMetricIds = new Set(SNAPSHOT_INDICATORS.flatMap((indicator) => indicator.metricIds));
 const retained = (previous.data.metrics ?? [])
@@ -208,6 +139,144 @@ const retained = (previous.data.metrics ?? [])
     || snapshotCandidateMetricIds.has(metric.id)
     || dayDifference(window.periodEnd, String(metric.observed_on).slice(0, 10)) <= RETENTION_DAYS[metric.category])
   .map(({ featured: _featured, ...metric }) => ({ ...metric, carried_forward: true }));
+
+const observationItemSchema = {
+  type: 'object', additionalProperties: false,
+  properties: {
+    id: { type: 'string', pattern: '^[a-z0-9_]+$' },
+    label: { type: 'string' }, value: { type: 'number' }, display_value: { type: 'string' },
+    detail: { type: 'string' }, scope: { type: 'string' }, unit: { type: ['string', 'null'] },
+    category: { type: 'string', enum: ['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products'] },
+    kind: { type: 'string', enum: ['Reported', 'Forecast', 'Estimate'] },
+    observed_on: { type: 'string' }, period_start: { type: ['string', 'null'] },
+    period_end: { type: ['string', 'null'] }, published_on: { type: 'string' },
+    source: { type: 'string' }, origin: { type: ['string', 'null'] },
+    source_relationship: { type: ['string', 'null'], enum: ['Original source', 'Repeats / cites', 'First-party', 'Owned by', 'Funded by', 'Independent reporting', 'Unknown', null] },
+    source_url: { type: 'string' }, evidence_excerpt: { type: 'string' }
+  },
+  required: ['id','label','value','display_value','detail','scope','unit','category','kind','observed_on','period_start','period_end','published_on','source','origin','source_relationship','source_url','evidence_excerpt']
+};
+
+const statisticalObservationItemSchema = {
+  type: 'object', additionalProperties: false,
+  properties: {
+    id: { type: 'string', pattern: '^[a-z0-9_]+$' },
+    label: { type: 'string' }, display_value: { type: 'string' }, detail: { type: 'string' },
+    source_id: { type: 'string' }, publisher: { type: 'string' }, dataset_name: { type: 'string' },
+    dataset_id: { type: ['string', 'null'] }, table_id: { type: ['string', 'null'] }, source_url: { type: 'string' },
+    geography: { type: 'string' }, reference_period: { type: 'string' }, observed_on: { type: 'string' },
+    release_date: { type: ['string', 'null'] }, revision_status: { type: 'string', enum: ['provisional', 'revised', 'final', 'unknown'] },
+    classification_system: { type: ['string', 'null'] }, classification_version: { type: ['string', 'null'] }, classification_code: { type: ['string', 'null'] },
+    measure: { type: 'string', enum: ['game_program_entrants', 'annual_game_specific_graduates', 'workforce_contraction', 'industry_outflow'] },
+    original_unit: { type: 'string' }, original_value: { type: 'number' },
+    query_or_filters: { type: ['string', 'null'] }, transformation: { type: ['string', 'null'] }, derived_value: { type: ['number', 'null'] },
+    precision_class: { type: 'string', enum: ['game-specific', 'identified-games-workforce'] },
+    coverage_notes: { type: 'string' }, evidence_excerpt: { type: 'string' }, raw_file_hash: { type: ['string', 'null'] }
+  },
+  required: ['id','label','display_value','detail','source_id','publisher','dataset_name','dataset_id','table_id','source_url','geography','reference_period','observed_on','release_date','revision_status','classification_system','classification_version','classification_code','measure','original_unit','original_value','query_or_filters','transformation','derived_value','precision_class','coverage_notes','evidence_excerpt','raw_file_hash']
+};
+
+const monthlyReportSchema = {
+  type: 'object', additionalProperties: false,
+  properties: {
+    observations: { type: 'array', maxItems: 32, items: observationItemSchema },
+    statistical_observations: { type: 'array', maxItems: 8, items: statisticalObservationItemSchema },
+    lede: { type: 'string' },
+    body_markdown: { type: 'string' }
+  },
+  required: ['observations', 'statistical_observations', 'lede', 'body_markdown']
+};
+
+const newsSources = NEWS_SOURCE_CATEGORIES.map((group) => ({
+  category: group.name,
+  sources: group.sources.map((source) => ({
+    name: source.name,
+    canonical_url: source.url,
+    coverage: source.coverage,
+    language: source.language
+  }))
+}));
+const statisticalSources = STATISTICAL_SOURCES
+  .filter((source) => source.active && ['education-pipeline', 'workforce-flow', 'industry-workforce'].includes(source.category))
+  .map((source) => ({
+    id: source.id,
+    name: source.name,
+    publisher: source.publisher,
+    canonical_url: source.url,
+    geography: source.geography,
+    classification_system: source.classificationSystem,
+    role: source.role,
+    limitations: source.limitations
+  }));
+
+let generated;
+try {
+  const response = await withTemporaryRetry('Monthly report', () => client.responses.create({
+    model,
+    reasoning: { effort: 'low' },
+    tools: [{ type: 'web_search', search_context_size: 'low' }],
+    text: { format: { type: 'json_schema', name: 'monthly_report', strict: true, schema: monthlyReportSchema } },
+    input: `Create one monthly games-industry report for ${window.periodStart} through ${window.periodEnd}, inclusive. Complete collection and report writing in this single response.
+
+REGULAR OBSERVATIONS
+Find newly published numeric observations using only the registered news sources below. Return an empty observations array when nothing is verifiable. Each observation requires the exact evidence URL and an excerpt of at most 25 words containing the value. Never infer, combine or extrapolate. published_on must fall inside the reporting window. observed_on is the date or period end described by the value. Reuse an id from the retained observations only when scope and measure genuinely match; otherwise use a stable id without dates or quarter names. Keep incompatible scopes separate.
+
+Prioritize these dashboard indicators, which must describe the overall market or a multi-company workforce dataset rather than one company, developer, publisher or game:
+${snapshotTargets}
+
+TALENT OBSERVATIONS
+In the same report, find the latest official observation available on or before ${window.periodEnd} for game_program_entrants, annual_game_specific_graduates, workforce_contraction and industry_outflow. Education results require an official programme or classification explicitly naming games or game development and precision_class game-specific. Never include adjacent computer science, animation, VFX, interactive media or art programmes. Workforce results require precision_class identified-games-workforce. Never substitute broader sectors, layoffs, employer separations, intent-to-leave sentiment or general labour proxies. Return unavailable measures as no observation. Do not combine countries, sources or classifications. Preserve the original value, unit, period, release, classification and filters. source_url must be official, evidence_excerpt must contain the value in at most 25 words, and raw_file_hash must be null.
+
+REPORT COPY
+Write one factual lede and a 400-500 word body in compact paragraphs using only the retained observations and observations returned in this response. Explain what the figures collectively show while keeping incompatible scopes separate. Include useful numbers and distinguish reported figures, estimates and forecasts. Do not mention AI, automation, methodology, confidence scores, instructions, notes to self or the collection process. Do not use headings or bullet points. Do not spotlight one company, developer, publisher or game in the lede.
+
+Retained observations:
+${JSON.stringify(retained)}
+
+Registered news sources:
+${JSON.stringify(newsSources)}
+
+Registered statistical sources:
+${JSON.stringify(statisticalSources)}`
+  }));
+  generated = JSON.parse(response.output_text);
+} catch (error) {
+  const status = error?.status ? ` (HTTP ${error.status})` : '';
+  const code = error?.code ? ` [${error.code}]` : '';
+  throw new Error(`Monthly report generation failed${status}${code}: ${error?.message ?? error}`, { cause: error });
+}
+
+const collected = [];
+for (const metric of generated.observations) {
+  const source = NEWS_SOURCE_CATEGORIES.flatMap((group) => group.sources).find((candidate) => candidate.name === metric.source);
+  if (!source) continue;
+  if (metric.published_on < window.periodStart || metric.published_on > window.periodEnd) continue;
+  if (!hostnameMatches(metric.source_url, source.url)) continue;
+  if (metric.evidence_excerpt.trim().split(/\s+/).length > 25) continue;
+  collected.push({
+    ...Object.fromEntries(Object.entries(metric).filter(([, value]) => value !== null)),
+    collected_on: reportDate,
+    carried_forward: false
+  });
+}
+
+const statisticalCollected = [];
+for (const observation of generated.statistical_observations) {
+  const source = STATISTICAL_SOURCES.find((candidate) => candidate.id === observation.source_id);
+  if (!source || !hostnameMatches(observation.source_url, source.url)) continue;
+  if (observation.release_date && observation.release_date > window.periodEnd) continue;
+  if (observation.observed_on > window.periodEnd) continue;
+  if (observation.evidence_excerpt.trim().split(/\s+/).length > 25) continue;
+  const indicator = TALENT_SNAPSHOT_INDICATORS.find((candidate) => candidate.measure === observation.measure);
+  if (!indicator || indicator.precision !== observation.precision_class) continue;
+  statisticalCollected.push({
+    ...Object.fromEntries(Object.entries(observation).filter(([, value]) => value !== null)),
+    publisher: source.publisher,
+    retrieved_at: reportDate,
+    methodology_version: 'talent-v1',
+    carried_forward: false
+  });
+}
 const byId = new Map(retained.map((metric) => [metric.id, metric]));
 for (const metric of collected) {
   const existing = byId.get(metric.id);
@@ -230,6 +299,34 @@ if (missingIndicators.length) {
 const snapshot = Object.fromEntries(snapshotEntries.filter(([, metricId]) => metricId));
 const snapshotMetricIds = new Set(Object.values(snapshot));
 
+const statisticalById = new Map(
+  (previous.data.statistical_observations ?? []).map((observation) => [observation.id, { ...observation, carried_forward: true }])
+);
+for (const observation of statisticalCollected) {
+  const existing = statisticalById.get(observation.id);
+  if (!existing || String(observation.observed_on).localeCompare(String(existing.observed_on)) >= 0) {
+    statisticalById.set(observation.id, observation);
+  }
+}
+const statisticalObservations = [...statisticalById.values()];
+const selectedTalent = new Map(TALENT_SNAPSHOT_INDICATORS.map((indicator) => {
+  const observation = statisticalObservations
+    .filter((candidate) => candidate.measure === indicator.measure && candidate.precision_class === indicator.precision)
+    .sort((a, b) => String(b.observed_on).localeCompare(String(a.observed_on)))[0];
+  return [indicator.key, observation];
+}));
+const talentPipeline = {};
+const entrants = selectedTalent.get('entrants');
+const graduates = selectedTalent.get('graduate_supply');
+if (entrants) talentPipeline.entrants = { observation_ids: [entrants.id] };
+if (graduates) talentPipeline.graduate_supply = { observation_ids: [graduates.id] };
+const workforceFlow = {};
+const contraction = selectedTalent.get('workforce_contraction');
+const outflow = selectedTalent.get('industry_outflow');
+if (contraction) workforceFlow.workforce_contraction = { observation_ids: [contraction.id] };
+if (outflow) workforceFlow.industry_outflow = { observation_ids: [outflow.id] };
+if (Object.keys(workforceFlow).length) talentPipeline.workforce_flow = workforceFlow;
+
 const categoryOrder = Object.keys(CATEGORY_LIMITS);
 const metrics = categoryOrder.flatMap((category) => {
   const candidates = [...byId.values()]
@@ -241,18 +338,7 @@ const metrics = categoryOrder.flatMap((category) => {
 });
 
 if (metrics.length < 12) throw new Error(`Only ${metrics.length} valid observations remain; refusing to publish.`);
-
-const summaryResponse = await withTemporaryRetry('Report summary', () => client.responses.create({
-  model,
-  reasoning: { effort: 'low' },
-  text: { format: { type: 'json_schema', name: 'report_copy', strict: true, schema: {
-    type: 'object', additionalProperties: false,
-    properties: { lede: { type: 'string' }, body_markdown: { type: 'string' } },
-    required: ['lede', 'body_markdown']
-  }}},
-  input: `Write the public copy for a monthly games-industry data snapshot using only the observations below. The lede must be one factual sentence about industry-wide indicators and must not spotlight one company, developer, publisher or game. The body must be 400-500 words in compact paragraphs, easy to digest, and explain what the figures collectively show while keeping incompatible scopes separate. Include useful numbers. Do not mention AI, automation, methodology, confidence scoring, instructions, notes to self, or the collection process. Do not introduce any fact that is not present in the observations. Do not use headings or bullet points. Clearly distinguish reported figures, estimates and forecasts.\n\nObservations:\n${JSON.stringify(metrics)}`
-}));
-const copy = JSON.parse(summaryResponse.output_text);
+const copy = { lede: generated.lede, body_markdown: generated.body_markdown };
 
 const report = {
   title: 'Game Industry Data Snapshot',
@@ -266,7 +352,9 @@ const report = {
   independently_audited: false,
   summary: copy.lede,
   snapshot,
-  metrics
+  metrics,
+  ...(statisticalObservations.length ? { statistical_observations: statisticalObservations } : {}),
+  ...(Object.keys(talentPipeline).length ? { talent_pipeline: talentPipeline } : {})
 };
 await fs.writeFile(outputPath, writeReport(report, copy.body_markdown), 'utf8');
-console.log(`Wrote ${outputPath} with ${collected.length} new and ${metrics.length - collected.length} retained observations.`);
+console.log(`Wrote ${outputPath} with ${collected.length} new report metrics, ${metrics.length - collected.length} retained metrics and ${statisticalCollected.length} new talent observations.`);

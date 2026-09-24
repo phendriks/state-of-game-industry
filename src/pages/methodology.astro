@@ -19,6 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <h2>Dashboard indicator schema</h2>
     <p>The overview is defined by the same eight industry indicators: global games revenue, global players, global spenders, new job listings, entry-level role share, mid-level role share, current-year layoffs and projected layoffs. Each slot references a stored observation, so its scope, date, type and source remain visible.</p>
+    <p>The same overview grid can also show up to four directly measured structural indicators: game-program entrants, game-specific graduates, games-workforce contraction and industry outflow. Missing indicators are omitted. Broader sector proxies and intent-to-leave surveys cannot fill these slots.</p>
     <p>When no compatible figure is published during the current collection window, the latest observation from the previous report is carried forward with its original observation date. A slot is omitted when the repository has never recorded a compatible figure.</p>
     <p>A result from one company, developer, publisher or game cannot fill an overview slot. Those observations remain available in the detailed tables.</p>
 
@@ -48,7 +49,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </ul>
 
     <h2>Talent pipeline &amp; workforce flow</h2>
-    <p>The Observatory is preparing a separate observation base for student inflow and professional outflow. The United States, Netherlands, United Kingdom, Canada, Australia, Japan, South Korea, China and several European or international systems have defensible official datasets, but their populations, classifications and release schedules differ. They are not combined into a synthetic global workforce total.</p>
+    <p>The Observatory maintains a separate observation base for student inflow and professional outflow. The United States, Netherlands, United Kingdom, Canada, Australia, Japan, South Korea, China and several European or international systems have defensible official datasets, but their populations, classifications and release schedules differ. They are not combined into a synthetic global workforce total.</p>
     <p>Education observations distinguish game-specific programmes from game-adjacent programmes and general context. Game-specific means that an official programme name or classification explicitly targets games or game development. Computer science, animation, VFX, interactive media, digital art and similar fields remain game-adjacent unless their official identity is explicitly games-focused.</p>
     <p>Graduate counts can often be tied to programme records. Professional outflow is harder: public labour datasets usually group games with broader software, publishing or creative activity. Employer separations, movement between games employers, movement out of games, movement into non-employment, workforce contraction and survey intent to leave therefore remain separate concepts. Intent to leave is sentiment, not observed attrition.</p>
     <p>The <a href={`${import.meta.env.BASE_URL}statistical-sources/`}>statistical source registry</a> shows which datasets can support each part of this work and labels their precision as game-specific, game-adjacent, sector proxy or general context. “Unavailable” is preferable to extending one country’s observations to another.</p>

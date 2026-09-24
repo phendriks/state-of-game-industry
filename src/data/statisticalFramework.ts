@@ -12,6 +12,9 @@ export type StatisticalObservationPrecision = typeof STATISTICAL_OBSERVATION_PRE
 
 export type StatisticalObservation = {
   id: string;
+  label: string;
+  displayValue: string;
+  detail: string;
   sourceId: string;
   publisher: string;
   datasetName: string;
@@ -20,6 +23,7 @@ export type StatisticalObservation = {
   sourceUrl: string;
   geography: string;
   referencePeriod: string;
+  observedOn: string;
   releaseDate?: string;
   retrievedAt: string;
   revisionStatus: 'provisional' | 'revised' | 'final' | 'unknown';
@@ -35,6 +39,8 @@ export type StatisticalObservation = {
   methodologyVersion: string;
   precisionClass: StatisticalObservationPrecision;
   coverageNotes: string;
+  evidenceExcerpt: string;
+  carriedForward: boolean;
   rawFileHash?: string;
 };
 

@@ -79,6 +79,9 @@ const metricSchema = z.object({
 
 const statisticalObservationSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
+  label: z.string().trim().min(1),
+  display_value: z.string().trim().min(1),
+  detail: z.string().trim().min(1),
   source_id: z.string().refine((sourceId) => registeredStatisticalSourceIds.has(sourceId), {
     message: 'Statistical source_id must match an id in src/data/statisticalSources.ts.'
   }),
@@ -89,6 +92,7 @@ const statisticalObservationSchema = z.object({
   source_url: z.string().url(),
   geography: z.string().trim().min(1),
   reference_period: z.string().trim().min(1),
+  observed_on: z.coerce.date(),
   release_date: z.coerce.date().optional(),
   retrieved_at: z.coerce.date(),
   revision_status: z.enum(['provisional', 'revised', 'final', 'unknown']),
@@ -104,6 +108,8 @@ const statisticalObservationSchema = z.object({
   methodology_version: z.string().trim().min(1),
   precision_class: z.enum(STATISTICAL_OBSERVATION_PRECISION_CLASSES),
   coverage_notes: z.string().trim().min(1),
+  evidence_excerpt: z.string().trim().min(1),
+  carried_forward: z.boolean().default(false),
   raw_file_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/).optional()
 });
 
