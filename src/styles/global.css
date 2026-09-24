@@ -34,3 +34,74 @@ html[data-theme="dark"]{color:#e9e7e1;background:#111210;color-scheme:dark}html[
 
 @media(max-width:760px){.header-actions{align-items:flex-start;flex-direction:column;gap:10px}.theme-toggle{align-self:flex-end}}
 @media(max-width:480px){.header-actions{width:100%}.theme-toggle{align-self:flex-start}}
+
+/* Compact desktop layout */
+@media(min-width:1000px){
+  body{font-size:.88rem}
+  .site-header{padding:11px max(20px,calc((100vw - 1500px)/2))}
+  .header-actions{gap:12px}
+  .site-header nav{gap:12px}
+  .site-header nav a{font-size:.8rem}
+  .theme-toggle{min-width:78px;padding:5px 8px;font-size:.7rem}
+  .shell{max-width:1500px;padding:30px 20px 54px}
+  .hero{padding:25px 0 19px}
+  .hero.compact{padding-top:13px}
+  .hero h1{font-size:clamp(2.5rem,3.6vw,3.6rem);max-width:1100px}
+  .hero.compact h1{font-size:clamp(2.2rem,3vw,2.8rem)}
+  .lede{max-width:900px;font-size:1rem}
+  .meta{gap:11px;font-size:.8rem}
+  .disclosure{gap:14px;padding:16px;border-radius:11px;margin:6px 0 17px}
+  .quick-links,.source-grid{gap:10px;margin:17px 0}
+  .card,.panel{padding:13px;border-radius:11px}
+  .report{padding:clamp(18px,3vw,38px);border-radius:13px;margin-top:18px}
+  .prose{max-width:1100px}
+  .prose h1,.prose h2,.prose h3{margin-top:1em}
+  .prose table{margin:.85rem 0;font-size:.82rem}
+  .prose th,.prose td{padding:6px 5px}
+  .prose blockquote{margin:.9rem 0;padding:9px 11px}
+  .panel{margin:11px 0}
+  .chart-wrap{height:150px;margin-top:10px}
+  .report-list a{padding:8px 0}
+  .site-footer{max-width:1500px;padding:17px 20px 36px;font-size:.78rem}
+  .snapshot{margin:2px 0 18px}
+  .section-heading{margin-bottom:12px}
+  .section-heading h2{font-size:clamp(1.45rem,2.4vw,2rem)}
+  .metric-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:10px}
+  .metric{min-height:96px;padding:12px;border-radius:10px}
+  .metric::before{width:3px}
+  .metric p{font-size:.68rem}
+  .metric strong{font-size:1.45rem}
+  .metric span{font-size:.76rem}
+  .metric small{margin-top:5px;font-size:.64rem}
+  .full-report{margin-top:20px}
+  .full-report>summary{gap:14px;padding:12px 14px;border-radius:10px}
+  .full-report[open]>summary{border-radius:10px 10px 4px 4px}
+  .full-report .report{margin-top:6px}
+  .full-report>summary small,.full-report>summary span:last-child,.full-report[open]>summary span:last-child::after{font-size:.74rem}
+  .button{padding:7px 11px;border-radius:7px;font-size:.8rem}
+  .source-section{grid-template-columns:minmax(180px,.5fr) 2fr;gap:24px;padding:18px 0}
+  .source-section-heading h2{font-size:1.15rem}
+  .source-section-heading p{font-size:.8rem}
+  .source-table{font-size:.78rem}
+  .source-table th,.source-table td{padding:6px 8px}
+  .registry-note{gap:24px;margin-top:20px}
+  .data-key{gap:8px;margin-bottom:14px}
+  .data-key div{padding:10px 11px;border-radius:8px}
+  .data-key span{font-size:.76rem}
+  .data-heading{gap:18px;padding:14px}
+  .data-heading>p{font-size:.8rem}
+  .data-table{font-size:.76rem}
+  .data-table th,.data-table td{padding:8px}
+  .data-kind{padding:3px 6px;font-size:.65rem}
+  .data-value>strong{font-size:.95rem}
+  .report-data{margin-top:25px}
+  .report-data-heading{margin-bottom:17px}
+  .report-data-group{margin-top:18px}
+  .report-data-table{font-size:.75rem}
+  .report-data-table th,.report-data-table td{padding:7px 8px}
+  .report-data-value{font-size:.9rem}
+  .form-layout{gap:12px}
+  .contribution-steps{padding:clamp(16px,2.4vw,23px)}
+  .contribution-steps li+li{margin-top:.45rem}
+  .source-example{padding:10px;border-radius:7px;font-size:.74rem}
+}
