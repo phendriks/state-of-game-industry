@@ -1,0 +1,25 @@
+---
+import { NEWS_SOURCE_CATEGORIES } from '../data/newsSources';
+import { STATISTICAL_SOURCES } from '../data/statisticalSources';
+interface Props { open?: boolean }
+const { open = false } = Astro.props;
+const news=NEWS_SOURCE_CATEGORIES.flatMap(category=>category.sources.map(source=>({source,category:category.id})));
+const eventNames=new Set(['Game Developer layoffs & closures','Xbox Wire']);
+const newsRows=(items:any[])=>items.map(({source}:any)=>({name:source.name,publisher:source.name,url:source.url,geography:source.geographic_focus??'Not specified',usedFor:source.coverage??'Monitored reporting',frequency:source.cadence??'Not set',type:source.type??'News / monitored source',limitation:source.notes??'Coverage and publication methods vary; each observation is checked against its stated scope.',registry:'Monitored source'}));
+const statsRows=(items:any[])=>items.map((source:any)=>({name:source.name,publisher:source.publisher,url:source.url,geography:source.geography,usedFor:source.role,frequency:source.frequency,type:`${source.sourceType} · ${source.gamesPrecision}`,limitation:source.limitations,registry:'Statistical / administrative'}));
+const groups=[
+  {title:'Employment & hiring',description:'Vacancies, layoffs and professional workforce surveys.',items:newsRows(news.filter(({category,source})=>(category==='employment'&&!eventNames.has(source.name))||category==='professional'))},
+  {title:'Industry news / corporate events',description:'Direct announcements and reporting used to identify material industry events.',items:newsRows(news.filter(({source})=>eventNames.has(source.name)))},
+  {title:'Consumer & critical reception',description:'Platform activity, community response and review aggregates.',items:newsRows(news.filter(({category})=>category==='consumer'))},
+  {title:'Commercial & financial',description:'Sales estimates, filings and first-party financial disclosures.',items:newsRows(news.filter(({category})=>category==='commercial'||category==='corporate'))},
+  {title:'Investment & macro',description:'Market size, capital activity and slower-moving industry context.',items:newsRows(news.filter(({category})=>category==='macro'))},
+  {title:'Education & graduate pipeline',description:'Statistical and administrative sources for entrants, completions and graduate outcomes.',items:statsRows(STATISTICAL_SOURCES.filter(source=>source.active&&['education-pipeline','graduate-outcomes'].includes(source.category)))},
+  {title:'Workforce flow / official statistics',description:'Official and sector datasets for employment, vacancies and worker movement.',items:statsRows(STATISTICAL_SOURCES.filter(source=>source.active&&['employment','job-vacancies','workforce-flow','industry-workforce'].includes(source.category)))}
+];
+---
+<div class="evidence-groups">{groups.map(group=>(
+  <details class="evidence-group" open={open}>
+    <summary><span><strong>{group.title}</strong><small>{group.description}</small></span><span>{group.items.length} sources</span></summary>
+    <div class="source-table-wrap"><table class="source-table evidence-table"><thead><tr><th>Source</th><th>Publisher</th><th>Geography</th><th>Used for</th><th>Frequency</th><th>Data precision / type</th><th>Key limitation</th><th>Link</th></tr></thead><tbody>{group.items.map(item=><tr><td><strong>{item.name}</strong><small class="registry-label">{item.registry}</small></td><td>{item.publisher}</td><td>{item.geography}</td><td>{item.usedFor}</td><td>{item.frequency}</td><td>{item.type}</td><td>{item.limitation}</td><td><a href={item.url}>Open</a></td></tr>)}</tbody></table></div>
+  </details>
+))}</div>

@@ -1,58 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
+import EvidenceBase from '../components/EvidenceBase.astro';
+import { NEWS_SOURCES } from '../data/newsSources';
+import { STATISTICAL_SOURCES } from '../data/statisticalSources';
+const sourceCount=NEWS_SOURCES.length+STATISTICAL_SOURCES.filter(source=>source.active).length;
 ---
 <BaseLayout title="Sources · Game Industry Observatory">
   <section class="hero compact">
-    <p class="eyebrow">Evidence base</p>
-    <h1>News source registry</h1>
-    <p class="lede">The {NEWS_SOURCES.length} sources below form the canonical starting set for each reporting run. Inclusion means a source is monitored—not that every claim it makes is accepted.</p>
+    <p class="eyebrow">Evidence base</p><h1>Source registry</h1>
+    <p class="lede">These {sourceCount} monitored and statistical sources form the canonical evidence base. Inclusion means a source is available to the workflow—not that every claim it makes is accepted.</p>
     <a class="button" href={`${import.meta.env.BASE_URL}submit-source/`}>Propose a source</a>
   </section>
-
-  <a class="card registry-route" href={`${import.meta.env.BASE_URL}statistical-sources/`}>
-    <p class="eyebrow">Separate evidence base</p>
-    <strong>Explore statistical sources</strong>
-    <span>Official datasets for student inflow, graduate outcomes, job demand and professional workforce flow.</span>
-  </a>
-
-  <div class="source-list">
-    {NEWS_SOURCE_CATEGORIES.map((group) => (
-      <section class="source-section" aria-labelledby={`source-${group.id}`}>
-        <div class="source-section-heading">
-          <h2 id={`source-${group.id}`}>{group.name}</h2>
-          <p>{group.description}</p>
-        </div>
-        <div class="source-table-wrap">
-          <table class="source-table">
-            <thead><tr><th>Source</th><th>What it covers</th><th>Cadence</th><th>Context</th></tr></thead>
-            <tbody>
-              {group.sources.map((source) => (
-                <tr>
-                  <td><a href={source.url}>{source.name}</a></td>
-                  <td>{source.coverage ?? 'To be reviewed'}</td>
-                  <td>{source.cadence ?? 'Not set'}</td>
-                  <td>
-                    {(source.type || source.language || source.geographic_focus || source.notes) ? (
-                      <details class="source-context">
-                        <summary>{source.type ?? 'Details'}</summary>
-                        {source.geographic_focus && <small>Region: {source.geographic_focus}</small>}
-                        {source.language && <small>Language: {source.language}</small>}
-                        {source.notes && <small>{source.notes}</small>}
-                      </details>
-                    ) : <span class="muted">—</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    ))}
-  </div>
-
-  <section class="panel registry-note">
-    <div><p class="eyebrow">How this stays transparent</p><h2>One public list, reviewed changes</h2></div>
-    <p>Contributors propose edits directly to <code>src/data/newsSources.ts</code> through a pull request. The repository owner reviews every proposal before merging it. Source type, language and affiliation provide context only. They are not quality scores.</p>
-  </section>
+  <EvidenceBase />
+  <section class="panel registry-note"><div><p class="eyebrow">How this stays transparent</p><h2>One public list, reviewed changes</h2></div><p>Contributors propose edits to the canonical registries through a pull request. The repository owner reviews every proposal before merging it. Source type, language and affiliation provide context only. They are not quality scores.</p></section>
 </BaseLayout>

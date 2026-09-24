@@ -127,6 +127,7 @@ const talentPipelineSchema = z.object({
   workforce_flow: z.object({
     employer_separation: statisticalMetricReferenceSchema.optional(),
     intra_games_movement: statisticalMetricReferenceSchema.optional(),
+    industry_inflow: statisticalMetricReferenceSchema.optional(),
     industry_outflow: statisticalMetricReferenceSchema.optional(),
     non_employment_outflow: statisticalMetricReferenceSchema.optional(),
     workforce_contraction: statisticalMetricReferenceSchema.optional(),

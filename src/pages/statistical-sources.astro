@@ -49,7 +49,7 @@ for (const source of STATISTICAL_SOURCES.filter((candidate) => candidate.active)
 
   <section class="panel prose statistical-intro">
     <h2>What this will eventually show</h2>
-    <p>The monthly workflow checks these sources for four dashboard measures: entrants, graduates, workforce contraction and industry outflow. It publishes a value only when collection can preserve the official source release, classification and transformation.</p>
+    <p>The monthly workflow checks these sources for programme entrants, graduates, workforce contraction, industry inflow and industry outflow. The dashboard uses verified graduates, workers entering games and workers leaving games, and publishes a value only when collection can preserve the official source release, classification and transformation.</p>
     <ul>
       {FUTURE_TALENT_METRICS.map((metric) => <li><strong>{metric.label}:</strong> {metric.definition}</li>)}
     </ul>

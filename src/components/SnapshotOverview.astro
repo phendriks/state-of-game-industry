@@ -1,80 +1,16 @@
 ---
-import { SNAPSHOT_INDICATORS } from '../data/snapshotIndicators';
-import { STATISTICAL_SOURCES } from '../data/statisticalSources';
-import { TALENT_SNAPSHOT_INDICATORS } from '../data/talentIndicators';
-
-type Metric = { id: string; label: string; display_value: string; detail: string; kind: string; source: string; observed_on: Date; carried_forward?: boolean; featured?: boolean };
-
-type StatisticalObservation = {
-  id: string; display_value: string; detail: string; source_id: string; source_url: string;
-  geography: string; reference_period: string; carried_forward?: boolean;
-};
-type ObservationReference = { observation_ids: string[] };
-type TalentPipeline = {
-  entrants?: ObservationReference;
-  graduate_supply?: ObservationReference;
-  workforce_flow?: { workforce_contraction?: ObservationReference; industry_outflow?: ObservationReference };
-};
-
-interface Props { report: { data: {
-  snapshot?: Record<string, string>;
-  metrics: Metric[];
-  statistical_observations?: StatisticalObservation[];
-  talent_pipeline?: TalentPipeline;
-} } }
-
+import MetricCard from './MetricCard.astro';
+import { buildDashboardSections } from '../data/dashboardMetrics';
+interface Props { report: { data: Parameters<typeof buildDashboardSections>[0] } }
 const { report } = Astro.props;
-const { snapshot, metrics = [] } = report.data;
-const metricsById = new Map(metrics.map((metric) => [metric.id, metric]));
-const snapshotMetrics = snapshot
-  ? SNAPSHOT_INDICATORS.map((indicator) => {
-      const metric = metricsById.get(snapshot[indicator.key]);
-      return metric ? { ...metric, dashboardLabel: indicator.label } : undefined;
-    }).filter((metric): metric is NonNullable<typeof metric> => metric !== undefined)
-  : [];
-const featuredMetrics = snapshot
-  ? snapshotMetrics
-  : metrics.filter((metric) => metric.featured).map((metric) => ({ ...metric, dashboardLabel: metric.label }));
-const statisticalObservations = new Map((report.data.statistical_observations ?? []).map((observation) => [observation.id, observation]));
-const statisticalSources = new Map(STATISTICAL_SOURCES.map((source) => [source.id, source]));
-const talentReferences = new Map<string, ObservationReference | undefined>([
-  ['entrants', report.data.talent_pipeline?.entrants],
-  ['graduate_supply', report.data.talent_pipeline?.graduate_supply],
-  ['workforce_contraction', report.data.talent_pipeline?.workforce_flow?.workforce_contraction],
-  ['industry_outflow', report.data.talent_pipeline?.workforce_flow?.industry_outflow]
-]);
-const talentMetrics = TALENT_SNAPSHOT_INDICATORS.flatMap((indicator) => {
-  const reference = talentReferences.get(indicator.key);
-  const observation = reference ? statisticalObservations.get(reference.observation_ids[0]) : undefined;
-  return observation ? [{ indicator, observation }] : [];
-});
+const sections = buildDashboardSections(report.data);
 ---
 <section class="snapshot" aria-labelledby="snapshot-title">
-  <div class="section-heading">
-    <p class="eyebrow">At a glance</p>
-    <h2 id="snapshot-title">The state of the industry</h2>
-  </div>
-
-  <div class="metric-grid">
-    {featuredMetrics.map((metric) => (
-      <article class="metric">
-        <p>{metric.dashboardLabel}</p>
-        <strong>{metric.display_value}</strong>
-        <span>{metric.detail}</span>
-        <small>{metric.kind} &middot; {metric.source}{metric.carried_forward ? ` · carried forward; observed ${metric.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}</small>
-      </article>
-    ))}
-    {talentMetrics.map(({ indicator, observation }) => (
-      <article class="metric">
-        <p>{indicator.label}</p>
-        <strong>{observation.display_value}</strong>
-        <span>{observation.detail}</span>
-        <small>
-          {observation.geography} · {observation.reference_period} · <a href={observation.source_url}>{statisticalSources.get(observation.source_id)?.name ?? observation.source_id}</a>
-          {observation.carried_forward ? ' · carried forward' : ''}
-        </small>
-      </article>
-    ))}
-  </div>
-
+  <div class="section-heading"><p class="eyebrow">At a glance</p><h2 id="snapshot-title">The state of the industry</h2></div>
+  {sections.map((section)=>(
+    <section class="metric-section" aria-labelledby={`metrics-${section.id}`}>
+      <div class="metric-section-heading"><h3 id={`metrics-${section.id}`}>{section.title}</h3><p>{section.description}</p></div>
+      <div class="metric-grid">{section.metrics.map((metric)=><MetricCard metric={metric}/>)}</div>
+    </section>
+  ))}
 </section>

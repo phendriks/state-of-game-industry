@@ -1,0 +1,12 @@
+---
+import type { DashboardMetricCard } from '../data/dashboardMetrics';
+interface Props { metric: DashboardMetricCard }
+const { metric } = Astro.props;
+---
+<article class:list={['metric',{'metric--missing':metric.status!=='available'}]}>
+  <div class="metric-heading"><p>{metric.label}</p><span class={`metric-kind metric-kind--${metric.status==='available'?metric.kind.toLowerCase():'unavailable'}`}>{metric.status==='available'?metric.kind:'Unavailable'}</span></div>
+  <strong>{metric.value}</strong>
+  {metric.secondaryValue&&<span>{metric.secondaryValue}</span>}
+  <dl class="metric-context"><div><dt>Source</dt><dd>{metric.sourceUrl?<a href={metric.sourceUrl}>{metric.source}</a>:metric.source}</dd></div><div><dt>Geography</dt><dd>{metric.geography}</dd></div><div><dt>Reference</dt><dd>{metric.referenceDate}</dd></div></dl>
+  {metric.missingReason&&<small>{metric.missingReason}</small>}
+</article>

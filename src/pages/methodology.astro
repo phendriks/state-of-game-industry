@@ -18,9 +18,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p>The public report presents the information in the opposite order: a short interpretation first, then the observations, then their sources and any known source relationships.</p>
 
     <h2>Dashboard indicator schema</h2>
-    <p>The overview is defined by the same eight industry indicators: global games revenue, global players, global spenders, new job listings, entry-level role share, mid-level role share, current-year layoffs and projected layoffs. Each slot references a stored observation, so its scope, date, type and source remain visible.</p>
-    <p>The same overview grid can also show up to four directly measured structural indicators: game-program entrants, game-specific graduates, games-workforce contraction and industry outflow. Missing indicators are omitted. Broader sector proxies and intent-to-leave surveys cannot fill these slots.</p>
-    <p>When no compatible figure is published during the current collection window, the latest observation from the previous report is carried forward with its original observation date. A slot is omitted when the repository has never recorded a compatible figure.</p>
+    <p>The overview uses three stable groups: worldwide players and market, the tracked DevQuest job dataset, and talent pipeline and workforce flow. Each available slot references a stored observation, so its scope, date, type and source remain visible.</p>
+    <p>Talent slots cover game-specific graduates, workers entering games, workers leaving games and a future graduate-to-entry-opportunity ratio. Missing indicators remain visible as unavailable. Broader sector proxies, layoffs and intent-to-leave surveys cannot fill these slots.</p>
+    <p>When no compatible figure is published during the current collection window, the latest compatible observation may be carried forward with its original observation date. The graduate-to-entry-opportunity ratio requires matching trailing-12-month flows on both sides; it never compares annual graduates with today’s open jobs.</p>
     <p>A result from one company, developer, publisher or game cannot fill an overview slot. Those observations remain available in the detailed tables.</p>
 
     <h2>Data types</h2>

@@ -59,6 +59,7 @@ if (data.talent_pipeline) {
     ['game_program_entrants', data.talent_pipeline.entrants],
     ['annual_game_specific_graduates', data.talent_pipeline.graduate_supply],
     ['workforce_contraction', data.talent_pipeline.workforce_flow?.workforce_contraction],
+    ['industry_inflow', data.talent_pipeline.workforce_flow?.industry_inflow],
     ['industry_outflow', data.talent_pipeline.workforce_flow?.industry_outflow]
   ].filter(([, reference]) => Boolean(reference));
   for (const [expectedMeasure, reference] of references) {

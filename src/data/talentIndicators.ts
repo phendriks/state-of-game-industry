@@ -22,6 +22,12 @@ export const TALENT_SNAPSHOT_INDICATORS = [
     label: 'Professional industry outflow',
     measure: 'industry_outflow',
     precision: 'identified-games-workforce'
+  },
+  {
+    key: 'industry_inflow',
+    label: 'Workers entering games',
+    measure: 'industry_inflow',
+    precision: 'identified-games-workforce'
   }
 ] as const;
 

@@ -102,6 +102,11 @@ export const WORKFORCE_FLOW_TERMS = [
     definition: 'A worker moves from one identified games employer to another.'
   },
   {
+    id: 'industry-inflow',
+    label: 'Industry inflow',
+    definition: 'A worker moves from a non-games employer into an identified games employer.'
+  },
+  {
     id: 'industry-outflow',
     label: 'Industry outflow',
     definition: 'A worker moves from an identified games employer to a non-games employer.'

@@ -3,9 +3,23 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SnapshotOverview from '../components/SnapshotOverview.astro';
 import ReportDataTables from '../components/ReportDataTables.astro';
+import EvidenceBase from '../components/EvidenceBase.astro';
 const reports = (await getCollection('reports')).sort((a,b) => b.data.published.getTime() - a.data.published.getTime());
 const latest = reports[0];
 const { Content } = await render(latest);
+type SignalMetric={id:string;display_value:string;detail:string};
+const metricsById=new Map<string,SignalMetric>((latest.data.metrics as SignalMetric[]).map(metric=>[metric.id,metric]));
+const revenue=metricsById.get('global_games_revenue');
+const openRoles=metricsById.get('open_roles');
+const entryShare=metricsById.get('entry_level_role_share');
+const engineeringShare=metricsById.get('engineering_role_share');
+const layoffs=metricsById.get('confirmed_layoffs_2026')??metricsById.get('current_year_layoffs');
+const projectedLayoffs=metricsById.get('forecast_layoffs_2026')??metricsById.get('projected_layoffs');
+const signals=[
+  revenue&&`${revenue.display_value} global revenue forecast; ${revenue.detail}.`,
+  openRoles&&`${openRoles.display_value} tracked openings${entryShare&&engineeringShare?`, with ${entryShare.display_value} entry-level and ${engineeringShare.display_value} engineering`:''}.`,
+  layoffs&&`${layoffs.display_value} confirmed layoffs${projectedLayoffs?`; ${projectedLayoffs.display_value} projected for the full year`:''}.`
+].filter((signal):signal is string=>Boolean(signal));
 ---
 <BaseLayout title="Game Industry Observatory">
   <section class="hero">
@@ -18,6 +32,13 @@ const { Content } = await render(latest);
     </div>
   </section>
   <SnapshotOverview report={latest} />
+  <section class="panel signal-board">
+    <p class="eyebrow">Signal board</p><h2>Key findings</h2><ul>{signals.map(signal=><li>{signal}</li>)}</ul>
+  </section>
+  <details class="full-report evidence-disclosure">
+    <summary><span><strong>View evidence base</strong><small>Browse monitored, statistical and administrative sources by category</small></span><span aria-hidden="true">Open sources</span></summary>
+    <div class="report evidence-report"><EvidenceBase /></div>
+  </details>
   <details class="full-report">
     <summary>
       <span><strong>Read the full report</strong><small>Employment, market, company and source tables</small></span>

@@ -24,7 +24,7 @@ Source suggestions are proposed as edits to `NEWS_SOURCE_CATEGORIES`. The reposi
 
 ## Monthly automation
 
-`.github/workflows/monthly-report.yml` runs on the 24th of each month in the Europe/Amsterdam timezone and defaults to`gpt-5.4-mini`. It covers the 24th of the preceding month through the 23rd of the publication month, validates the resulting report, builds the site and commits the canonical Markdown artifact.
+`.github/workflows/monthly-report.yml` runs on the 24th of each month in the Europe/Amsterdam timezone and uses the centralized `gpt-6-luna` default with medium reasoning effort. It covers the 24th of the preceding month through the 23rd of the publication month, validates the resulting report, builds the site and commits the canonical Markdown artifact.
 
 New observations require an exact registered source name, a publication date inside the monthly window, an evidence URL on the registered source's domain and an evidence excerpt. Older observations can be carried forward for a category-specific period without changing their observation date. A failed collection, validation or build does not commit or deploy anything.
 
