@@ -22,15 +22,9 @@ Set `human_reviewed: true` only after a person has checked the report. A non-emp
 
 Source suggestions are proposed as edits to `NEWS_SOURCE_CATEGORIES`. The repository owner reviews each pull request before merging it. Keeping collection inputs and the public Sources page in the same file makes source-list changes and contributors inspectable in Git history.
 
-A source proposal only needs a name, canonical URL, simple type and optional note. Coverage, cadence, language and geographic details can be added during review. Source type and affiliation are context, not scores.
-
 ## Monthly automation
 
-`.github/workflows/monthly-report.yml` runs on the 24th of each month in the Europe/Amsterdam timezone. It covers the 24th of the preceding month through the 23rd of the publication month, validates the resulting report, builds the site, commits the canonical Markdown artifact and deploys that same build. Manual runs default to a non-publishing dry run.
-
-The preferred authentication method is OpenAI workload identity federation. Configure the repository variables `OPENAI_WIF_AUDIENCE`, `OPENAI_IDENTITY_PROVIDER_ID` and `OPENAI_SERVICE_ACCOUNT_ID`. A repository secret named `OPENAI_API_KEY` is supported as a fallback. `OPENAI_MODEL` is optional and defaults to `gpt-5.4-mini`.
-
-Collection is deliberately fail-closed. New observations require an exact registered source name, a publication date inside the monthly window, an evidence URL on the registered source's domain and an evidence excerpt. Older observations can be carried forward for a category-specific period without changing their observation date. A failed collection, validation or build does not commit or deploy anything.
+`.github/workflows/monthly-report.yml` runs on the 24th of each month in the Europe/Amsterdam timezone and defaults to`gpt-5.4-mini`. It covers the 24th of the preceding month through the 23rd of the publication month, validates the resulting report, builds the site and commits the canonical Markdown artifact. Collection is deliberately fail-closed. New observations require an exact registered source name, a publication date inside the monthly window, an evidence URL on the registered source's domain and an evidence excerpt. Older observations can be carried forward for a category-specific period without changing their observation date. A failed collection, validation or build does not commit or deploy anything.
 
 ## AI and coverage disclosure
 
