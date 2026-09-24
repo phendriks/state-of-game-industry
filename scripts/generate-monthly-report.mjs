@@ -48,6 +48,8 @@ function openAIClient() {
 }
 
 const client = openAIClient();
+console.log(`Generating ${reportDate} for ${window.periodStart} through ${window.periodEnd} with ${model}.`);
+console.log(`Authentication: ${process.env.OPENAI_IDENTITY_PROVIDER_ID ? 'OpenAI workload identity' : 'API key fallback'}.`);
 const previousBySource = new Map();
 for (const metric of previous.data.metrics ?? []) {
   const list = previousBySource.get(metric.source) ?? [];
@@ -97,7 +99,14 @@ async function collectCategory(group) {
 
 const collected = [];
 for (const group of NEWS_SOURCE_CATEGORIES) {
-  const observations = await collectCategory(group);
+  let observations;
+  try {
+    observations = await collectCategory(group);
+  } catch (error) {
+    const status = error?.status ? ` (HTTP ${error.status})` : '';
+    const code = error?.code ? ` [${error.code}]` : '';
+    throw new Error(`Collection failed for source group "${group.name}"${status}${code}: ${error?.message ?? error}`, { cause: error });
+  }
   for (const metric of observations) {
     const source = group.sources.find((candidate) => candidate.name === metric.source);
     if (!source) continue;
