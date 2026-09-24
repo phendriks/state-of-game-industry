@@ -1,11 +1,22 @@
 ---
-type Metric = { label: string; display_value: string; detail: string; kind: string; source: string; featured: boolean };
+import { SNAPSHOT_INDICATORS } from '../data/snapshotIndicators';
 
-interface Props { report: { data: { metrics: Metric[] } } }
+type Metric = { id: string; label: string; display_value: string; detail: string; kind: string; source: string; observed_on: Date; carried_forward?: boolean; featured?: boolean };
+
+interface Props { report: { data: { snapshot?: Record<string, string>; metrics: Metric[] } } }
 
 const { report } = Astro.props;
-const { metrics = [] } = report.data;
-const featuredMetrics = metrics.filter((metric) => metric.featured);
+const { snapshot, metrics = [] } = report.data;
+const metricsById = new Map(metrics.map((metric) => [metric.id, metric]));
+const snapshotMetrics = snapshot
+  ? SNAPSHOT_INDICATORS.map((indicator) => {
+      const metric = metricsById.get(snapshot[indicator.key]);
+      return metric ? { ...metric, dashboardLabel: indicator.label } : undefined;
+    }).filter((metric): metric is Metric & { dashboardLabel: string } => Boolean(metric))
+  : [];
+const featuredMetrics = snapshot
+  ? snapshotMetrics
+  : metrics.filter((metric) => metric.featured).map((metric) => ({ ...metric, dashboardLabel: metric.label }));
 ---
 <section class="snapshot" aria-labelledby="snapshot-title">
   <div class="section-heading">
@@ -16,10 +27,10 @@ const featuredMetrics = metrics.filter((metric) => metric.featured);
   <div class="metric-grid">
     {featuredMetrics.map((metric) => (
       <article class="metric">
-        <p>{metric.label}</p>
+        <p>{metric.dashboardLabel}</p>
         <strong>{metric.display_value}</strong>
         <span>{metric.detail}</span>
-        <small>{metric.kind} · {metric.source}</small>
+        <small>{metric.kind} &middot; {metric.source}{metric.carried_forward ? ` · carried forward; observed ${metric.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}</small>
       </article>
     ))}
   </div>

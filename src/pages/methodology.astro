@@ -17,6 +17,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p>The observation is the basic unit of evidence. Each numeric observation records its source, scope, date and data type. It may also record a unit, reference period, publication date, collection date, underlying origin or source relationship.</p>
     <p>The public report presents the information in the opposite order: a short interpretation first, then the observations, then their sources and any known source relationships.</p>
 
+    <h2>Dashboard indicator schema</h2>
+    <p>The overview is defined by the same eight industry indicators: global games revenue, global players, global spenders, new job listings, entry-level role share, mid-level role share, current-year layoffs and projected layoffs. Each slot references a stored observation, so its scope, date, type and source remain visible.</p>
+    <p>When no compatible figure is published during the current collection window, the latest observation from the previous report is carried forward with its original observation date. A slot is omitted when the repository has never recorded a compatible figure.</p>
+    <p>A result from one company, developer, publisher or game cannot fill an overview slot. Those observations remain available in the detailed tables.</p>
+
     <h2>Data types</h2>
     <ul>
       <li><strong>Reported</strong> means the named source published or directly counted the figure.</li>

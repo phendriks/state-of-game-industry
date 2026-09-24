@@ -1,8 +1,13 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { NEWS_SOURCES } from './data/newsSources';
+import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from './data/snapshotIndicators';
 
 const registeredSourceNames = new Set(NEWS_SOURCES.map((source) => source.name));
+const metricReferenceSchema = z.string().regex(/^[a-z0-9_]+$/);
+const snapshotSchema = z.object(Object.fromEntries(
+  SNAPSHOT_INDICATOR_KEYS.map((key) => [key, metricReferenceSchema])
+)).partial();
 
 const metricSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
@@ -81,6 +86,7 @@ const reportSchema = z.object({
   global_representativeness: z.string(),
   independently_audited: z.boolean().default(false),
   summary: z.string(),
+  snapshot: snapshotSchema.optional(),
   metrics: z.array(metricSchema)
 }).superRefine((report, context) => {
   if (report.human_reviewed && !report.reviewer) {
@@ -102,6 +108,28 @@ const reportSchema = z.object({
       path: ['metrics'],
       message: `Metric IDs must be unique within a report: ${[...new Set(duplicateMetricIds)].join(', ')}`
     });
+  }
+
+  if (report.snapshot) {
+    const metricIds = new Set(report.metrics.map((metric) => metric.id));
+    for (const indicator of SNAPSHOT_INDICATORS) {
+      const metricId = report.snapshot[indicator.key];
+      if (!metricId) continue;
+      if (!metricIds.has(metricId)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['snapshot', indicator.key],
+          message: `Snapshot indicator must reference a metric in this report: ${metricId}`
+        });
+      }
+      if (!(indicator.metricIds as readonly string[]).includes(metricId)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['snapshot', indicator.key],
+          message: `${indicator.label} cannot reference ${metricId}.`
+        });
+      }
+    }
   }
 });
 

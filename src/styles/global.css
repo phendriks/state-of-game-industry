@@ -66,7 +66,7 @@ html[data-theme="dark"]{color:#e9e7e1;background:#111210;color-scheme:dark}html[
   .snapshot{margin:2px 0 18px}
   .section-heading{margin-bottom:12px}
   .section-heading h2{font-size:clamp(1.45rem,2.4vw,2rem)}
-  .metric-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:10px}
+  .metric-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
   .metric{min-height:96px;padding:12px;border-radius:10px}
   .metric::before{width:3px}
   .metric p{font-size:.68rem}

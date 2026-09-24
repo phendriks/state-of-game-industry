@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import OpenAI from 'openai';
 import { NEWS_SOURCE_CATEGORIES } from '../src/data/newsSources.ts';
+import { SNAPSHOT_INDICATORS } from '../src/data/snapshotIndicators.ts';
 import {
   CATEGORY_LIMITS, REPORTS_DIR, RETENTION_DAYS, amsterdamDate, dayDifference,
   hostnameMatches, latestReport, reportWindow, writeReport
@@ -55,6 +56,42 @@ async function withTemporaryRetry(label, operation) {
   throw new Error(`${label} exhausted its retry attempts.`);
 }
 
+function deriveMidLevelRoleShare(metricsById) {
+  if (metricsById.has('mid_level_role_share')) return;
+  const roles = metricsById.get('mid_level_roles');
+  const total = metricsById.get('open_roles');
+  if (!roles || !total || roles.source !== total.source || roles.observed_on !== total.observed_on || total.value <= 0) return;
+  const value = Number(((roles.value / total.value) * 100).toFixed(1));
+  metricsById.set('mid_level_role_share', {
+    id: 'mid_level_role_share',
+    label: 'Mid-level role share',
+    value,
+    display_value: `${value.toFixed(1)}%`,
+    detail: `${roles.display_value} of ${total.display_value} tracked openings`,
+    scope: roles.scope,
+    unit: 'percent of tracked openings',
+    category: 'Employment',
+    kind: 'Calculated',
+    observed_on: roles.observed_on,
+    ...(roles.period_start ? { period_start: roles.period_start } : {}),
+    ...(roles.period_end ? { period_end: roles.period_end } : {}),
+    ...(roles.published_on || total.published_on ? {
+      published_on: [roles.published_on, total.published_on].filter(Boolean).sort().at(-1)
+    } : {}),
+    source: roles.source,
+    ...(roles.source_url || total.source_url ? { source_url: roles.source_url ?? total.source_url } : {}),
+    origin: 'Calculated from stored job-listing counts',
+    source_relationship: 'Derived from',
+    calculation: 'mid-level roles / tracked open roles x 100',
+    inputs: [
+      { label: roles.label, value: roles.value, display_value: roles.display_value },
+      { label: total.label, value: total.value, display_value: total.display_value }
+    ],
+    collected_on: reportDate,
+    carried_forward: Boolean(roles.carried_forward && total.carried_forward)
+  });
+}
+
 function githubOIDCProvider(requestURL, requestToken, audience) {
   return {
     tokenType: 'jwt',
@@ -90,6 +127,9 @@ function openAIClient() {
 const client = openAIClient();
 console.log(`Generating ${reportDate} for ${window.periodStart} through ${window.periodEnd} with ${model}.`);
 console.log(`Authentication: ${process.env.OPENAI_IDENTITY_PROVIDER_ID ? 'OpenAI workload identity' : 'API key fallback'}.`);
+const snapshotTargets = SNAPSHOT_INDICATORS
+  .map(({ key, label }) => `- ${key}: ${label}`)
+  .join('\n');
 const previousBySource = new Map();
 for (const metric of previous.data.metrics ?? []) {
   const list = previousBySource.get(metric.source) ?? [];
@@ -132,7 +172,7 @@ async function collectCategory(group) {
     reasoning: { effort: 'low' },
     tools: [{ type: 'web_search', search_context_size: 'low' }],
     text: { format: { type: 'json_schema', name: 'monthly_observations', strict: true, schema: observationSchema } },
-    input: `Find newly published, numeric games-industry observations for this reporting window: ${window.periodStart} through ${window.periodEnd}, inclusive.\n\nOnly use the registered sources below, preferably their first-party pages. Return an empty array when nothing verifiable is available. Every observation must be explicitly supported by the exact evidence URL and a short excerpt containing the value. Never calculate, infer, combine, extrapolate, or copy a claim from an unrelated secondary domain. published_on must fall inside the reporting window. observed_on is the date or period end the number describes and must not be changed to the collection date. Reuse a previous metric id when the scope and measure are genuinely the same; otherwise create a stable id without dates or quarter names. Keep incompatible scopes separate. Do not return narrative news without a numeric observation.\n\nRegistered ${group.name} sources:\n${JSON.stringify(sources)}`
+    input: `Find newly published, numeric games-industry observations for this reporting window: ${window.periodStart} through ${window.periodEnd}, inclusive.\n\nOnly use the registered sources below, preferably their first-party pages. Return an empty array when nothing verifiable is available. Every observation must be explicitly supported by the exact evidence URL and a short excerpt containing the value. Never calculate, infer, combine, extrapolate, or copy a claim from an unrelated secondary domain. published_on must fall inside the reporting window. observed_on is the date or period end the number describes and must not be changed to the collection date. Reuse a previous metric id when the scope and measure are genuinely the same; otherwise create a stable id without dates or quarter names. Keep incompatible scopes separate. Do not return narrative news without a numeric observation.\n\nPrioritize direct observations for these dashboard indicators. Use the exact id before the colon when an observation matches. These indicators must describe the overall market or a multi-company workforce dataset, never one company, developer, publisher or game:\n${snapshotTargets}\n\nRegistered ${group.name} sources:\n${JSON.stringify(sources)}`
   }));
   return JSON.parse(response.output_text).observations;
 }
@@ -156,30 +196,50 @@ for (const group of NEWS_SOURCE_CATEGORIES) {
     collected.push({
       ...Object.fromEntries(Object.entries(metric).filter(([, value]) => value !== null)),
       collected_on: reportDate,
-      carried_forward: false,
-      featured: false
+      carried_forward: false
     });
   }
 }
 
+const previousSnapshotMetricIds = new Set(Object.values(previous.data.snapshot ?? {}));
+const snapshotCandidateMetricIds = new Set(SNAPSHOT_INDICATORS.flatMap((indicator) => indicator.metricIds));
 const retained = (previous.data.metrics ?? [])
-  .filter((metric) => dayDifference(window.periodEnd, String(metric.observed_on).slice(0, 10)) <= RETENTION_DAYS[metric.category])
-  .map((metric) => ({ ...metric, featured: false, carried_forward: true }));
+  .filter((metric) => previousSnapshotMetricIds.has(metric.id)
+    || snapshotCandidateMetricIds.has(metric.id)
+    || dayDifference(window.periodEnd, String(metric.observed_on).slice(0, 10)) <= RETENTION_DAYS[metric.category])
+  .map(({ featured: _featured, ...metric }) => ({ ...metric, carried_forward: true }));
 const byId = new Map(retained.map((metric) => [metric.id, metric]));
-for (const metric of collected) byId.set(metric.id, metric);
+for (const metric of collected) {
+  const existing = byId.get(metric.id);
+  if (!existing || String(metric.observed_on).localeCompare(String(existing.observed_on)) >= 0) {
+    byId.set(metric.id, metric);
+  }
+}
+deriveMidLevelRoleShare(byId);
+
+const snapshotEntries = SNAPSHOT_INDICATORS.map((indicator) => {
+  const metric = [...byId.values()]
+    .filter((candidate) => indicator.metricIds.includes(candidate.id))
+    .sort((a, b) => String(b.observed_on).localeCompare(String(a.observed_on)))[0];
+  return [indicator.key, metric?.id];
+});
+const missingIndicators = snapshotEntries.filter(([, metricId]) => !metricId).map(([key]) => key);
+if (missingIndicators.length) {
+  console.warn(`Snapshot indicators without recorded data will be omitted: ${missingIndicators.join(', ')}`);
+}
+const snapshot = Object.fromEntries(snapshotEntries.filter(([, metricId]) => metricId));
+const snapshotMetricIds = new Set(Object.values(snapshot));
 
 const categoryOrder = Object.keys(CATEGORY_LIMITS);
-const metrics = categoryOrder.flatMap((category) => [...byId.values()]
-  .filter((metric) => metric.category === category)
-  .sort((a, b) => String(b.observed_on).localeCompare(String(a.observed_on)))
-  .slice(0, CATEGORY_LIMITS[category]));
+const metrics = categoryOrder.flatMap((category) => {
+  const candidates = [...byId.values()]
+    .filter((metric) => metric.category === category)
+    .sort((a, b) => String(b.observed_on).localeCompare(String(a.observed_on)));
+  const dashboardMetrics = candidates.filter((metric) => snapshotMetricIds.has(metric.id));
+  const supportingMetrics = candidates.filter((metric) => !snapshotMetricIds.has(metric.id));
+  return [...dashboardMetrics, ...supportingMetrics].slice(0, Math.max(CATEGORY_LIMITS[category], dashboardMetrics.length));
+});
 
-for (const category of ['Market', 'Players', 'Employment', 'Business', 'Corporate']) {
-  const candidate = metrics.find((metric) => metric.category === category);
-  if (candidate) candidate.featured = true;
-}
-const extraFeatured = metrics.filter((metric) => !metric.featured).sort((a, b) => String(b.observed_on).localeCompare(String(a.observed_on)))[0];
-if (extraFeatured) extraFeatured.featured = true;
 if (metrics.length < 12) throw new Error(`Only ${metrics.length} valid observations remain; refusing to publish.`);
 
 const summaryResponse = await withTemporaryRetry('Report summary', () => client.responses.create({
@@ -190,7 +250,7 @@ const summaryResponse = await withTemporaryRetry('Report summary', () => client.
     properties: { lede: { type: 'string' }, body_markdown: { type: 'string' } },
     required: ['lede', 'body_markdown']
   }}},
-  input: `Write the public copy for a monthly games-industry data snapshot using only the observations below. The lede must be one factual sentence. The body must be 400-500 words in compact paragraphs, easy to digest, and explain what the figures collectively show while keeping incompatible scopes separate. Include useful numbers. Do not mention AI, automation, methodology, confidence scoring, instructions, notes to self, or the collection process. Do not introduce any fact that is not present in the observations. Do not use headings or bullet points. Clearly distinguish reported figures, estimates and forecasts.\n\nObservations:\n${JSON.stringify(metrics)}`
+  input: `Write the public copy for a monthly games-industry data snapshot using only the observations below. The lede must be one factual sentence about industry-wide indicators and must not spotlight one company, developer, publisher or game. The body must be 400-500 words in compact paragraphs, easy to digest, and explain what the figures collectively show while keeping incompatible scopes separate. Include useful numbers. Do not mention AI, automation, methodology, confidence scoring, instructions, notes to self, or the collection process. Do not introduce any fact that is not present in the observations. Do not use headings or bullet points. Clearly distinguish reported figures, estimates and forecasts.\n\nObservations:\n${JSON.stringify(metrics)}`
 }));
 const copy = JSON.parse(summaryResponse.output_text);
 
@@ -205,6 +265,7 @@ const report = {
   global_representativeness: previous.data.global_representativeness,
   independently_audited: false,
   summary: copy.lede,
+  snapshot,
   metrics
 };
 await fs.writeFile(outputPath, writeReport(report, copy.body_markdown), 'utf8');
