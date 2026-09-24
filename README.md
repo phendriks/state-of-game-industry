@@ -25,7 +25,7 @@ A source proposal only needs a name, canonical URL, simple type and optional not
 
 ## Report authoring
 
-Write a single industry summary in the Markdown body. Put every numeric observation in the frontmatter `metrics` list; the snapshot, detailed tables and hard-data history are generated from that one list.
+Write a single industry summary in the Markdown body. Put every numeric observation in the frontmatter `metrics` list; the snapshot, detailed tables and data history are generated from that one list.
 
 Use stable metric IDs between reports. A later report can add job-listing flow and survival, Steam activity breadth, company formation, public-company financial facts and international-talent demand without rewriting historical reports. Do not report a change until two compatible observations exist.
 
