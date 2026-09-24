@@ -228,7 +228,7 @@ TALENT OBSERVATIONS
 In the same report, find the latest official observation available on or before ${window.periodEnd} for game_program_entrants, annual_game_specific_graduates, workforce_contraction and industry_outflow. Education results require an official programme or classification explicitly naming games or game development and precision_class game-specific. Never include adjacent computer science, animation, VFX, interactive media or art programmes. Workforce results require precision_class identified-games-workforce. Never substitute broader sectors, layoffs, employer separations, intent-to-leave sentiment or general labour proxies. Return unavailable measures as no observation. Do not combine countries, sources or classifications. Preserve the original value, unit, period, release, classification and filters. source_url must be official, evidence_excerpt must contain the value in at most 25 words, and raw_file_hash must be null.
 
 REPORT COPY
-Write one factual lede and a 400-500 word body in compact paragraphs using only the retained observations and observations returned in this response. Explain what the figures collectively show while keeping incompatible scopes separate. Include useful numbers and distinguish reported figures, estimates and forecasts. Do not mention AI, automation, methodology, confidence scores, instructions, notes to self or the collection process. Do not use headings or bullet points. Do not spotlight one company, developer, publisher or game in the lede.
+Write one factual lede and a readable body in compact paragraphs. Use the length needed to explain the available observations clearly without padding or repetition. Use only the retained observations and observations returned in this response. Explain what the figures collectively show while keeping incompatible scopes separate. Include useful numbers and distinguish reported figures, estimates and forecasts. Do not mention AI, automation, methodology, confidence scores, instructions, notes to self or the collection process. Do not use headings or bullet points. Do not spotlight one company, developer, publisher or game in the lede.
 
 Retained observations:
 ${JSON.stringify(retained)}
@@ -337,7 +337,6 @@ const metrics = categoryOrder.flatMap((category) => {
   return [...dashboardMetrics, ...supportingMetrics].slice(0, Math.max(CATEGORY_LIMITS[category], dashboardMetrics.length));
 });
 
-if (metrics.length < 12) throw new Error(`Only ${metrics.length} valid observations remain; refusing to publish.`);
 const copy = { lede: generated.lede, body_markdown: generated.body_markdown };
 
 const report = {

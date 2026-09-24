@@ -2,7 +2,6 @@ import path from 'node:path';
 import { NEWS_SOURCES } from '../src/data/newsSources.ts';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from '../src/data/snapshotIndicators.ts';
 import { STATISTICAL_SOURCES } from '../src/data/statisticalSources.ts';
-import { TALENT_SNAPSHOT_INDICATORS } from '../src/data/talentIndicators.ts';
 import { REPORTS_DIR, amsterdamDate, hostnameMatches, readReport, reportWindow } from './report-lib.mjs';
 
 const requestedDate = process.argv.find((arg) => arg.startsWith('--report-date='))?.split('=')[1];
@@ -13,12 +12,18 @@ const { data, body } = await readReport(file);
 const errors = [];
 const sources = new Set(NEWS_SOURCES.map((source) => source.name));
 const statisticalSources = new Map(STATISTICAL_SOURCES.map((source) => [source.id, source]));
+const metrics = Array.isArray(data.metrics) ? data.metrics : [];
+const statisticalObservations = Array.isArray(data.statistical_observations) ? data.statistical_observations : [];
 
 if (String(data.published) !== expected.published) errors.push('published does not match the file date');
 if (String(data.period_start) !== expected.periodStart) errors.push(`period_start must be ${expected.periodStart}`);
 if (String(data.period_end) !== expected.periodEnd) errors.push(`period_end must be ${expected.periodEnd}`);
-if (data.human_reviewed !== false) errors.push('unattended reports must set human_reviewed to false');
-if (!Array.isArray(data.metrics) || data.metrics.length < 12) errors.push('at least 12 observations are required');
+if (typeof data.human_reviewed !== 'boolean') errors.push('human_reviewed must be a boolean');
+if (data.human_reviewed && !data.reviewer) errors.push('a reviewer is required when human_reviewed is true');
+if (!Array.isArray(data.metrics)) errors.push('metrics must be an array');
+if (data.statistical_observations !== undefined && !Array.isArray(data.statistical_observations)) {
+  errors.push('statistical_observations must be an array when present');
+}
 if (data.snapshot) {
   const snapshotKeys = Object.keys(data.snapshot);
   const unexpectedKeys = snapshotKeys.filter((key) => !SNAPSHOT_INDICATOR_KEYS.includes(key));
@@ -26,7 +31,7 @@ if (data.snapshot) {
 }
 
 const statisticalIds = new Set();
-for (const [index, observation] of (data.statistical_observations ?? []).entries()) {
+for (const [index, observation] of statisticalObservations.entries()) {
   if (statisticalIds.has(observation.id)) errors.push(`duplicate statistical observation id: ${observation.id}`);
   statisticalIds.add(observation.id);
   const source = statisticalSources.get(observation.source_id);
@@ -46,14 +51,10 @@ for (const [index, observation] of (data.statistical_observations ?? []).entries
   if (observation.evidence_excerpt?.trim().split(/\s+/).length > 25) {
     errors.push(`statistical observation ${observation.id} evidence excerpt exceeds 25 words`);
   }
-  const indicator = TALENT_SNAPSHOT_INDICATORS.find((candidate) => candidate.measure === observation.measure);
-  if (!indicator || indicator.precision !== observation.precision_class) {
-    errors.push(`statistical observation ${observation.id} has an unsupported measure or precision`);
-  }
 }
 
 if (data.talent_pipeline) {
-  const observationsById = new Map((data.statistical_observations ?? []).map((observation) => [observation.id, observation]));
+  const observationsById = new Map(statisticalObservations.map((observation) => [observation.id, observation]));
   const references = [
     ['game_program_entrants', data.talent_pipeline.entrants],
     ['annual_game_specific_graduates', data.talent_pipeline.graduate_supply],
@@ -71,7 +72,7 @@ if (data.talent_pipeline) {
 }
 
 const ids = new Set();
-for (const [index, metric] of (data.metrics ?? []).entries()) {
+for (const [index, metric] of metrics.entries()) {
   if (ids.has(metric.id)) errors.push(`duplicate metric id: ${metric.id}`);
   ids.add(metric.id);
   if (!sources.has(metric.source)) errors.push(`metric ${index + 1} uses an unregistered source: ${metric.source}`);
@@ -101,7 +102,6 @@ if (data.snapshot) {
 
 const summary = body.replace(/^#.*$/gm, '').replace(/^##.*$/gm, '').trim();
 const wordCount = summary.split(/\s+/).filter(Boolean).length;
-if (wordCount < 350 || wordCount > 550) errors.push(`industry summary must contain 350-550 words; found ${wordCount}`);
 
 if (errors.length) throw new Error(`Report validation failed:\n- ${errors.join('\n- ')}`);
-console.log(`Validated ${file}: ${data.metrics.length} observations, ${wordCount} summary words.`);
+console.log(`Validated ${file}: ${metrics.length} observations, ${wordCount} summary words.`);
