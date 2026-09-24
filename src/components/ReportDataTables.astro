@@ -15,6 +15,9 @@ type Metric = {
   published_on?: Date;
   collected_on?: Date;
   source: string;
+  source_url?: string;
+  evidence_excerpt?: string;
+  carried_forward?: boolean;
   origin?: string;
   source_relationship?: string;
   calculation?: string;
@@ -52,8 +55,8 @@ const groups = categoryOrder
                 <td><span class={`data-kind data-kind--${metric.kind.toLowerCase()}`}>{metric.kind}</span></td>
                 <td>{metric.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                 <td>
-                  <a href={sourceRecords.get(metric.source)?.url}>{metric.source}</a>
-                  {(metric.origin || metric.source_relationship || metric.published_on || metric.collected_on || sourceRecords.get(metric.source)?.language) && (
+                  <a href={metric.source_url ?? sourceRecords.get(metric.source)?.url}>{metric.source}</a>
+                  {(metric.origin || metric.source_relationship || metric.published_on || metric.collected_on || metric.evidence_excerpt || metric.carried_forward || sourceRecords.get(metric.source)?.language) && (
                     <details class="source-context">
                       <summary>Context</summary>
                       {metric.origin && <small>Origin: {metric.origin}</small>}
@@ -61,6 +64,8 @@ const groups = categoryOrder
                       {sourceRecords.get(metric.source)?.language && <small>Language: {sourceRecords.get(metric.source)?.language}</small>}
                       {metric.published_on && <small>Published: {metric.published_on.toLocaleDateString('en-GB')}</small>}
                       {metric.collected_on && <small>Collected: {metric.collected_on.toLocaleDateString('en-GB')}</small>}
+                      {metric.evidence_excerpt && <small>Evidence: {metric.evidence_excerpt}</small>}
+                      {metric.carried_forward && <small>Carried forward; observation date unchanged.</small>}
                     </details>
                   )}
                 </td>

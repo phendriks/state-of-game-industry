@@ -6,11 +6,18 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "report:generate": "tsx scripts/generate-monthly-report.mjs",
+    "report:validate": "tsx scripts/validate-report.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "astro": "^5.13.5",
+    "openai": "^6.0.0",
     "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "yaml": "^2.8.1"
   }
 }

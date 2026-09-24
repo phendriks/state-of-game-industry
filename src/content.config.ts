@@ -22,6 +22,9 @@ const metricSchema = z.object({
   source: z.string().refine((source) => registeredSourceNames.has(source), {
     message: 'Metric source must exactly match a source in src/data/newsSources.ts.'
   }),
+  source_url: z.string().url().optional(),
+  evidence_excerpt: z.string().trim().min(1).optional(),
+  carried_forward: z.boolean().default(false),
   origin: z.string().trim().min(1).optional(),
   source_relationship: z.enum([
     'Original source',

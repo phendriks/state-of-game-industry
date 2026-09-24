@@ -1,0 +1,112 @@
+name: Monthly report
+
+on:
+  schedule:
+    - cron: '17 6 24 * *'
+      timezone: Europe/Amsterdam
+  workflow_dispatch:
+    inputs:
+      report_date:
+        description: Optional YYYY-MM-24 date; defaults to today in Amsterdam
+        required: false
+        type: string
+      dry_run:
+        description: Build and upload the report without committing or publishing
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.mode.outputs.publish }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Select report date
+        id: date
+        shell: bash
+        run: |
+          if [[ -n "${{ inputs.report_date }}" ]]; then
+            echo "args=--report-date=${{ inputs.report_date }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate monthly report
+        env:
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.4-mini' }}
+          OPENAI_WIF_AUDIENCE: ${{ vars.OPENAI_WIF_AUDIENCE }}
+          OPENAI_IDENTITY_PROVIDER_ID: ${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}
+          OPENAI_SERVICE_ACCOUNT_ID: ${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npm run report:generate -- ${{ steps.date.outputs.args }}
+      - name: Validate monthly report
+        run: npm run report:validate -- ${{ steps.date.outputs.args }}
+      - name: Build site
+        run: npm run build
+      - name: Set publication mode
+        id: mode
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.dry_run }}" == "false" ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Upload dry-run report
+        if: steps.mode.outputs.publish == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: monthly-report-dry-run
+          path: src/data/reports/*.md
+      - name: Commit report
+        if: steps.mode.outputs.publish == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/reports
+          if git diff --cached --quiet; then
+            echo "Report already matches the generated output."
+          else
+            git commit -m "publish monthly industry data snapshot"
+            git push
+          fi
+      - name: Configure Pages
+        if: steps.mode.outputs.publish == 'true'
+        uses: actions/configure-pages@v5
+      - name: Upload site artifact
+        if: steps.mode.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    if: needs.generate.outputs.publish == 'true'
+    needs: generate
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
