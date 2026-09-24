@@ -2,43 +2,56 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Methodology · Game Industry Observatory">
-  <section class="hero compact"><p class="eyebrow">Transparency</p><h1>Methodology</h1><p class="lede">The site is an AI-assisted industry-observation system, not a manually researched statistical authority.</p></section>
+  <section class="hero compact">
+    <p class="eyebrow">Transparency</p>
+    <h1>Methodology</h1>
+    <p class="lede">The Observatory is a source-backed temperature check across the wider games domain. It is not an official statistical authority.</p>
+  </section>
+
   <article class="prose panel">
-    <h2>Production method</h2>
-    <p>Reports are generated using ChatGPT-assisted automated and semi-automated aggregation of publicly accessible sources. They are not presented as hand-collected, hand-written or manually aggregated journalism.</p>
-    <p>Structured metrics and source evidence are collected before explanatory text is produced. AI-written language is not used to create the underlying measurements.</p>
-    <h2>Human review</h2>
-    <p>Every report declares whether it has been reviewed by a person. A report marked as human-reviewed must also identify its reviewer. Review improves confidence but is not presented as an independent audit.</p>
-    <h2>Data classifications</h2>
+    <h2>What counts as the games industry?</h2>
+    <p>There is no single global definition. A market report, company filing, workforce survey and government register may each cover a different population. The Observatory keeps those differences visible instead of forcing them into one definition.</p>
+    <p>An observation may be useful when it concerns games, game development, businesses, workers, players, markets or closely related activity. Inclusion does not mean that every company or activity has been formally classified as part of the games industry.</p>
+
+    <h2>From source to observation</h2>
+    <p>The observation is the basic unit of evidence. Each numeric observation records its source, scope, date and data type. It may also record a unit, reference period, publication date, collection date, underlying origin or source relationship.</p>
+    <p>The public report presents the information in the opposite order: a short interpretation first, then the observations, then their sources and any known source relationships.</p>
+
+    <h2>Data types</h2>
     <ul>
-      <li><strong>Reported</strong> means a figure was published or directly counted by the named source.</li>
-      <li><strong>Calculated</strong> means the Observatory performed transparent arithmetic using stored source values. The formula and at least two inputs must accompany the result.</li>
-      <li><strong>Forecast</strong> means a source's forward-looking projection.</li>
-      <li><strong>Estimate</strong> means a third-party calculation rather than an official disclosure.</li>
+      <li><strong>Reported</strong> means the named source published or directly counted the figure.</li>
+      <li><strong>Calculated</strong> means the Observatory performed simple arithmetic. The formula and source inputs must be stored with the result.</li>
+      <li><strong>Forecast</strong> means a source projected a future value.</li>
+      <li><strong>Estimate</strong> means a third party modeled a value that was not officially disclosed.</li>
     </ul>
-    <p>These classifications remain separate. The Observatory does not combine them into a composite health score or synthetic sentiment index.</p>
+    <p>These types remain separate. The Observatory does not combine them into a health score.</p>
+
+    <h2>Sources and independence</h2>
+    <p>Publication count is not the same as independent evidence. Ten articles repeating one press release still have one underlying origin.</p>
+    <p>Where it is clear, the Observatory may record whether a source is original, first-party, independent reporting, funded or owned by another organisation, derived from another source, or repeating another publication. These relationships provide context. They are not quality scores.</p>
+    <p>First-party information can be the best source for what a company officially reported. It may still be unsuitable as independent evidence for a wider claim. When a relationship cannot be established, it remains unknown. The system must never invent one.</p>
+
     <h2>Collection rules</h2>
     <ul>
-      <li>Every metric names a source in the public source registry, a scope and an observation date. Unregistered metric sources fail the site build.</li>
-      <li>Commercial results distinguish official disclosures from third-party estimates.</li>
-      <li>Layoff totals are treated as minimums when companies do not disclose affected headcount.</li>
-      <li>Open-job counts measure advertised demand, not completed hiring. A disappeared listing is called removed, never filled, unless the employer confirms a hire.</li>
-      <li>Where stable job identifiers are available, future reports retain additions, removals and 14/30/60/90-day listing survival. The first compatible observation is only a baseline.</li>
-      <li>Steam activity is collected at a consistent UTC time where practical. It measures one PC platform, not total players, sales or revenue.</li>
-      <li>Company births, dissolutions and insolvency states use official registers. Legal entities and self-selected industry codes are not treated as exact studio counts.</li>
-      <li>Public-company financial facts remain company-level series. Different segments, currencies and reporting periods are not combined into rankings.</li>
-      <li>Quarterly financial results and annual surveys retain their original cadence rather than being treated as new fortnightly observations.</li>
-      <li>Community discussion is sampled consistently and separated by subject: game, studio, publisher or industry.</li>
-      <li>LinkedIn is supplementary context rather than a scraping dependency.</li>
+      <li>Do not combine observations with different populations, regions, platforms, definitions or periods without making the difference clear.</li>
+      <li>Commercial results distinguish official disclosures from modeled estimates.</li>
+      <li>Layoff totals are minimums when companies do not disclose affected headcount.</li>
+      <li>Open-job counts measure advertised demand, not completed hiring. A missing listing is called removed, not filled, unless the employer confirms a hire.</li>
+      <li>Platform activity describes that platform only. It is not presented as total industry activity.</li>
+      <li>Company-register data describes legal entities. It is not automatically the same as a count of studios.</li>
+      <li>Quarterly results and annual surveys keep their original cadence. They are not described as new fortnightly observations.</li>
     </ul>
-    <h2>Reporting format</h2>
-    <p>Each report contains one short industry summary. The remaining report is rendered from structured metrics rather than separately maintained prose and tables. AI assistance may condense the observations into the summary, but it may not manufacture, interpolate or silently recategorize a measurement.</p>
-    <h2>Scope</h2>
-    <p>The source set is currently strongest for English-language, North American and European / Western-facing games-industry reporting, public-company disclosures, professional discussion and consumer communities.</p>
-    <p>China, Japan, South Korea, Southeast Asia and other markets are not yet covered with equivalent depth. Private companies, mobile-first ecosystems, non-English professional communities and smaller studios may also be underrepresented.</p>
-    <h2>Uncertainty</h2>
-    <p>Original sources may be incomplete or wrong, and automated extraction, classification and generative summarization can introduce additional errors. Community sentiment is particularly uncertain around sarcasm, humor, memes, mixed targets, translation and community-specific context.</p>
-    <h2>Interpretation</h2>
-    <p>Multiple sources are compared where practical, but aggregation does not guarantee truth or representativeness. Observed relationships are not treated as proof of causation. Readers should verify consequential claims against the linked primary source.</p>
+
+    <h2>Languages</h2>
+    <p>Useful evidence does not have to be in English. The registry can record a source's language and region. AI-assisted extraction may produce a clear English summary, but it must keep the original source, meaning, limits and uncertainty. An English source is not automatically better than a local-language source.</p>
+
+    <h2>How reports are written</h2>
+    <p>Structured observations and source evidence are collected before explanatory text is written. Each report contains one short industry summary. The remaining tables are generated from the structured observations.</p>
+    <p>AI assistance may condense observations into the summary. It may not manufacture values, fill gaps, invent independence, strengthen translated claims or silently change an observation's scope.</p>
+
+    <h2>Human review and limits</h2>
+    <p>Every report states whether a person reviewed it. A reviewed report also names the reviewer. Human review can catch mistakes, but it is not an independent audit.</p>
+    <p>Source coverage is still uneven. It is strongest in English-language, North American and European reporting. The expanded registry improves coverage of Asia, MENA and local-language sources, but private companies, smaller studios and some platforms remain harder to observe.</p>
+    <p>Sources, extraction and summaries can contain errors. Readers should check important claims against the linked original material.</p>
   </article>
 </BaseLayout>

@@ -25,16 +25,16 @@ const registryEditUrl = 'https://github.com/phendriks/state-of-game-industry/edi
     </section>
 
     <aside class="panel review-note">
-      <p class="eyebrow">Entry format</p>
+      <p class="eyebrow">Simple entry</p>
       <h2>What to include</h2>
       <pre class="source-example"><code>{`{
   name: 'Source name',
   url: 'https://example.com/',
-  coverage: 'What it measures',
-  cadence: 'Continuous'
+  type: 'Research / survey',
+  notes: 'Optional useful context'
 }`}</code></pre>
-      <p>Use one of the cadence values already supported by the registry: <strong>Continuous</strong>, <strong>Quarterly</strong>, <strong>Annual</strong> or <strong>Periodic</strong>.</p>
-      <p>In the pull-request description, mention geographic coverage, access restrictions and any relationship you have with the source.</p>
+      <p>A name, canonical URL and simple type are enough for a proposal. Notes are optional. The owner can add coverage, cadence, language or regional details during review.</p>
+      <p>In the pull-request description, disclose any relationship you have with the source. Affiliation does not automatically make a source better or worse.</p>
     </aside>
   </div>
 </BaseLayout>

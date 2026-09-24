@@ -6,10 +6,17 @@ type Metric = {
   display_value: string;
   detail: string;
   scope: string;
+  unit?: string;
   category: 'Market' | 'Players' | 'Employment' | 'Business' | 'Corporate' | 'Products';
   kind: 'Reported' | 'Calculated' | 'Forecast' | 'Estimate';
   observed_on: Date;
+  period_start?: Date;
+  period_end?: Date;
+  published_on?: Date;
+  collected_on?: Date;
   source: string;
+  origin?: string;
+  source_relationship?: string;
   calculation?: string;
   inputs?: { label: string; display_value: string }[];
 };
@@ -17,7 +24,7 @@ type Metric = {
 interface Props { report: { data: { metrics: Metric[] } } }
 
 const { report } = Astro.props;
-const sourceUrls = new Map(NEWS_SOURCES.map((source) => [source.name, source.url]));
+const sourceRecords = new Map(NEWS_SOURCES.map((source) => [source.name, source]));
 const categoryOrder: Metric['category'][] = ['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products'];
 const groups = categoryOrder
   .map((category) => ({ category, metrics: report.data.metrics.filter((metric) => metric.category === category) }))
@@ -44,7 +51,19 @@ const groups = categoryOrder
                 <td>{metric.scope}<small>{metric.detail}</small>{metric.calculation && <small>Calculation: {metric.calculation}</small>}{metric.inputs && <small>Inputs: {metric.inputs.map((input) => `${input.label} ${input.display_value}`).join('; ')}</small>}</td>
                 <td><span class={`data-kind data-kind--${metric.kind.toLowerCase()}`}>{metric.kind}</span></td>
                 <td>{metric.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                <td><a href={sourceUrls.get(metric.source)}>{metric.source}</a></td>
+                <td>
+                  <a href={sourceRecords.get(metric.source)?.url}>{metric.source}</a>
+                  {(metric.origin || metric.source_relationship || metric.published_on || metric.collected_on || sourceRecords.get(metric.source)?.language) && (
+                    <details class="source-context">
+                      <summary>Context</summary>
+                      {metric.origin && <small>Origin: {metric.origin}</small>}
+                      {metric.source_relationship && <small>Relationship: {metric.source_relationship}</small>}
+                      {sourceRecords.get(metric.source)?.language && <small>Language: {sourceRecords.get(metric.source)?.language}</small>}
+                      {metric.published_on && <small>Published: {metric.published_on.toLocaleDateString('en-GB')}</small>}
+                      {metric.collected_on && <small>Collected: {metric.collected_on.toLocaleDateString('en-GB')}</small>}
+                    </details>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

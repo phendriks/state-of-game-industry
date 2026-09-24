@@ -11,12 +11,28 @@ const metricSchema = z.object({
   display_value: z.string(),
   detail: z.string(),
   scope: z.string().trim().min(1),
+  unit: z.string().trim().min(1).optional(),
   category: z.enum(['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products']),
   kind: z.enum(['Reported', 'Calculated', 'Forecast', 'Estimate']),
   observed_on: z.coerce.date(),
+  period_start: z.coerce.date().optional(),
+  period_end: z.coerce.date().optional(),
+  published_on: z.coerce.date().optional(),
+  collected_on: z.coerce.date().optional(),
   source: z.string().refine((source) => registeredSourceNames.has(source), {
     message: 'Metric source must exactly match a source in src/data/newsSources.ts.'
   }),
+  origin: z.string().trim().min(1).optional(),
+  source_relationship: z.enum([
+    'Original source',
+    'Repeats / cites',
+    'Derived from',
+    'First-party',
+    'Owned by',
+    'Funded by',
+    'Independent reporting',
+    'Unknown'
+  ]).optional(),
   calculation: z.string().trim().min(1).optional(),
   inputs: z.array(z.object({
     label: z.string(),
@@ -38,6 +54,14 @@ const metricSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ['kind'],
       message: 'Calculation metadata is only valid for Calculated metrics.'
+    });
+  }
+
+  if (metric.period_start && metric.period_end && metric.period_end < metric.period_start) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['period_end'],
+      message: 'Metric period_end cannot be before period_start.'
     });
   }
 });

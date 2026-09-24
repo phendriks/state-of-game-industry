@@ -19,6 +19,8 @@
 .form-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,.75fr);gap:20px;align-items:start}
 .contribution-steps{margin-top:0;padding:clamp(22px,4vw,38px)}.contribution-steps h2{margin:.1em 0 .6em}.contribution-steps ol{padding-left:1.3rem}.contribution-steps li+li{margin-top:.7rem}.contribution-steps .button{margin:12px 0}.source-example{overflow-x:auto;padding:16px;border-radius:10px;background:#222;color:#f6f4ef;font-size:.82rem;line-height:1.55}.form-note{margin:0;color:#6c6961;font-size:.82rem}.review-note{margin-top:0}.review-note h2{margin:.1em 0 .6em}.review-note>p:last-child{color:#68655e;font-size:.9rem}
 
+.source-table th:nth-child(3),.source-table td:nth-child(3){width:105px}.source-table th:last-child,.source-table td:last-child{width:190px}.source-context{margin-top:5px}.source-context summary{cursor:pointer;color:#5f5c54;font-size:.76rem;font-weight:700}.source-context small{display:block;margin-top:3px;color:#716e66;line-height:1.35}
+
 @media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,1fr)}.source-section{grid-template-columns:1fr;gap:14px}}
 @media(max-width:760px){.registry-note,.form-layout{grid-template-columns:1fr;gap:14px}.metric-grid{grid-template-columns:1fr 1fr}.metric{min-height:135px}.full-report>summary{align-items:flex-start}.full-report>summary span:last-child{display:none}}
 @media(max-width:760px){.data-key,.data-heading{grid-template-columns:1fr}.data-heading{gap:10px}}

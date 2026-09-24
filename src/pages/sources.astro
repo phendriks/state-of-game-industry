@@ -19,13 +19,23 @@ import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
         </div>
         <div class="source-table-wrap">
           <table class="source-table">
-            <thead><tr><th>Source</th><th>What it covers</th><th>Cadence</th></tr></thead>
+            <thead><tr><th>Source</th><th>What it covers</th><th>Cadence</th><th>Context</th></tr></thead>
             <tbody>
               {group.sources.map((source) => (
                 <tr>
                   <td><a href={source.url}>{source.name}</a></td>
-                  <td>{source.coverage}</td>
-                  <td>{source.cadence}</td>
+                  <td>{source.coverage ?? 'To be reviewed'}</td>
+                  <td>{source.cadence ?? 'Not set'}</td>
+                  <td>
+                    {(source.type || source.language || source.geographic_focus || source.notes) ? (
+                      <details class="source-context">
+                        <summary>{source.type ?? 'Details'}</summary>
+                        {source.geographic_focus && <small>Region: {source.geographic_focus}</small>}
+                        {source.language && <small>Language: {source.language}</small>}
+                        {source.notes && <small>{source.notes}</small>}
+                      </details>
+                    ) : <span class="muted">—</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -37,6 +47,6 @@ import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
 
   <section class="panel registry-note">
     <div><p class="eyebrow">How this stays transparent</p><h2>One public list, reviewed changes</h2></div>
-    <p>Contributors propose edits directly to <code>src/data/newsSources.ts</code> through a pull request. The repository owner reviews every proposal before merging it. That file powers this page and is the required starting point for every new report, so the disclosed list and collection input cannot quietly drift apart.</p>
+    <p>Contributors propose edits directly to <code>src/data/newsSources.ts</code> through a pull request. The repository owner reviews every proposal before merging it. Source type, language and affiliation provide context only. They are not quality scores.</p>
   </section>
 </BaseLayout>
