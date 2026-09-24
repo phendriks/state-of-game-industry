@@ -47,6 +47,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <li>Quarterly results and annual surveys keep their original cadence. They are not described as new fortnightly observations.</li>
     </ul>
 
+    <h2>Talent pipeline &amp; workforce flow</h2>
+    <p>The Observatory is preparing a separate observation base for student inflow and professional outflow. The United States, Netherlands, United Kingdom, Canada, Australia, Japan, South Korea, China and several European or international systems have defensible official datasets, but their populations, classifications and release schedules differ. They are not combined into a synthetic global workforce total.</p>
+    <p>Education observations distinguish game-specific programmes from game-adjacent programmes and general context. Game-specific means that an official programme name or classification explicitly targets games or game development. Computer science, animation, VFX, interactive media, digital art and similar fields remain game-adjacent unless their official identity is explicitly games-focused.</p>
+    <p>Graduate counts can often be tied to programme records. Professional outflow is harder: public labour datasets usually group games with broader software, publishing or creative activity. Employer separations, movement between games employers, movement out of games, movement into non-employment, workforce contraction and survey intent to leave therefore remain separate concepts. Intent to leave is sentiment, not observed attrition.</p>
+    <p>The <a href={`${import.meta.env.BASE_URL}statistical-sources/`}>statistical source registry</a> shows which datasets can support each part of this work and labels their precision as game-specific, game-adjacent, sector proxy or general context. “Unavailable” is preferable to extending one country’s observations to another.</p>
+
+    <h2>Statistical provenance and raw data</h2>
+    <p>Future statistical observations preserve the publisher, dataset and table identifiers, official URL, geography, reference and release dates, retrieval date, revision status, classification system and code, original unit and value, filters, transformation, methodology version, precision class and coverage notes.</p>
+    <p>Whenever practical, the exact CSV, XLSX or JSON used for an observation is retained. If a raw file is too large or its licence prevents repository storage, the Observatory records an immutable release identifier or externally stored object reference plus a SHA-256 hash. A small manifest can remain in the repository while large source files remain in suitable external storage.</p>
+    <p>That record makes four different changes distinguishable: a real change in the measured population, a revision by the publisher, a changed programme or workforce classification, and a changed Observatory method. Derived figures always retain their inputs and transformation.</p>
+
     <h2>Languages</h2>
     <p>Useful evidence does not have to be in English. The registry can record a source's language and region. AI-assisted extraction may produce a clear English summary, but it must keep the original source, meaning, limits and uncertainty. An English source is not automatically better than a local-language source.</p>
 

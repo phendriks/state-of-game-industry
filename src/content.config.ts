@@ -2,8 +2,11 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { NEWS_SOURCES } from './data/newsSources';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from './data/snapshotIndicators';
+import { STATISTICAL_OBSERVATION_PRECISION_CLASSES } from './data/statisticalFramework';
+import { STATISTICAL_SOURCES } from './data/statisticalSources';
 
 const registeredSourceNames = new Set(NEWS_SOURCES.map((source) => source.name));
+const registeredStatisticalSourceIds = new Set(STATISTICAL_SOURCES.map((source) => source.id));
 const metricReferenceSchema = z.string().regex(/^[a-z0-9_]+$/);
 const snapshotSchema = z.object(Object.fromEntries(
   SNAPSHOT_INDICATOR_KEYS.map((key) => [key, metricReferenceSchema])
@@ -74,6 +77,57 @@ const metricSchema = z.object({
   }
 });
 
+const statisticalObservationSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  source_id: z.string().refine((sourceId) => registeredStatisticalSourceIds.has(sourceId), {
+    message: 'Statistical source_id must match an id in src/data/statisticalSources.ts.'
+  }),
+  publisher: z.string().trim().min(1),
+  dataset_name: z.string().trim().min(1),
+  dataset_id: z.string().trim().min(1).optional(),
+  table_id: z.string().trim().min(1).optional(),
+  source_url: z.string().url(),
+  geography: z.string().trim().min(1),
+  reference_period: z.string().trim().min(1),
+  release_date: z.coerce.date().optional(),
+  retrieved_at: z.coerce.date(),
+  revision_status: z.enum(['provisional', 'revised', 'final', 'unknown']),
+  classification_system: z.string().trim().min(1).optional(),
+  classification_version: z.string().trim().min(1).optional(),
+  classification_code: z.string().trim().min(1).optional(),
+  measure: z.string().trim().min(1),
+  original_unit: z.string().trim().min(1),
+  original_value: z.union([z.number(), z.string().trim().min(1)]),
+  query_or_filters: z.string().trim().min(1).optional(),
+  transformation: z.string().trim().min(1).optional(),
+  derived_value: z.number().optional(),
+  methodology_version: z.string().trim().min(1),
+  precision_class: z.enum(STATISTICAL_OBSERVATION_PRECISION_CLASSES),
+  coverage_notes: z.string().trim().min(1),
+  raw_file_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/).optional()
+});
+
+const statisticalMetricReferenceSchema = z.object({
+  observation_ids: z.array(z.string().regex(/^[a-z0-9_]+$/)).min(1),
+  note: z.string().trim().min(1).optional()
+});
+
+const talentPipelineSchema = z.object({
+  graduate_supply: statisticalMetricReferenceSchema.optional(),
+  entrants: statisticalMetricReferenceSchema.optional(),
+  enrollment: statisticalMetricReferenceSchema.optional(),
+  entry_level_opportunities: statisticalMetricReferenceSchema.optional(),
+  graduate_to_entry_opportunity_ratio: statisticalMetricReferenceSchema.optional(),
+  workforce_flow: z.object({
+    employer_separation: statisticalMetricReferenceSchema.optional(),
+    intra_games_movement: statisticalMetricReferenceSchema.optional(),
+    industry_outflow: statisticalMetricReferenceSchema.optional(),
+    non_employment_outflow: statisticalMetricReferenceSchema.optional(),
+    workforce_contraction: statisticalMetricReferenceSchema.optional(),
+    intent_to_leave: statisticalMetricReferenceSchema.optional()
+  }).optional()
+});
+
 const reportSchema = z.object({
   title: z.string(),
   published: z.coerce.date(),
@@ -87,7 +141,9 @@ const reportSchema = z.object({
   independently_audited: z.boolean().default(false),
   summary: z.string(),
   snapshot: snapshotSchema.optional(),
-  metrics: z.array(metricSchema)
+  metrics: z.array(metricSchema),
+  statistical_observations: z.array(statisticalObservationSchema).optional(),
+  talent_pipeline: talentPipelineSchema.optional()
 }).superRefine((report, context) => {
   if (report.human_reviewed && !report.reviewer) {
     context.addIssue({
@@ -108,6 +164,42 @@ const reportSchema = z.object({
       path: ['metrics'],
       message: `Metric IDs must be unique within a report: ${[...new Set(duplicateMetricIds)].join(', ')}`
     });
+  }
+
+  const duplicateObservationIds = (report.statistical_observations ?? [])
+    .map((observation) => observation.id)
+    .filter((id, index, ids) => ids.indexOf(id) !== index);
+
+  if (duplicateObservationIds.length > 0) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['statistical_observations'],
+      message: `Statistical observation IDs must be unique within a report: ${[...new Set(duplicateObservationIds)].join(', ')}`
+    });
+  }
+
+  if (report.talent_pipeline) {
+    const observationIds = new Set((report.statistical_observations ?? []).map((observation) => observation.id));
+    const pipelineReferences = [
+      report.talent_pipeline.graduate_supply,
+      report.talent_pipeline.entrants,
+      report.talent_pipeline.enrollment,
+      report.talent_pipeline.entry_level_opportunities,
+      report.talent_pipeline.graduate_to_entry_opportunity_ratio,
+      ...Object.values(report.talent_pipeline.workforce_flow ?? {})
+    ].filter((reference) => reference !== undefined);
+
+    for (const reference of pipelineReferences) {
+      for (const observationId of reference.observation_ids) {
+        if (!observationIds.has(observationId)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['talent_pipeline'],
+            message: `Talent pipeline reference must match a statistical observation in this report: ${observationId}`
+          });
+        }
+      }
+    }
   }
 
   if (report.snapshot) {

@@ -5,10 +5,16 @@ import { NEWS_SOURCE_CATEGORIES, NEWS_SOURCES } from '../data/newsSources';
 <BaseLayout title="Sources · Game Industry Observatory">
   <section class="hero compact">
     <p class="eyebrow">Evidence base</p>
-    <h1>Source registry</h1>
+    <h1>News source registry</h1>
     <p class="lede">The {NEWS_SOURCES.length} sources below form the canonical starting set for each reporting run. Inclusion means a source is monitored—not that every claim it makes is accepted.</p>
     <a class="button" href={`${import.meta.env.BASE_URL}submit-source/`}>Propose a source</a>
   </section>
+
+  <a class="card registry-route" href={`${import.meta.env.BASE_URL}statistical-sources/`}>
+    <p class="eyebrow">Separate evidence base</p>
+    <strong>Explore statistical sources</strong>
+    <span>Official datasets for student inflow, graduate outcomes, job demand and professional workforce flow.</span>
+  </a>
 
   <div class="source-list">
     {NEWS_SOURCE_CATEGORIES.map((group) => (

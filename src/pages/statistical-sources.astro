@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { STATISTICAL_SOURCES } from '../data/statisticalSources';
+import type { StatisticalSource } from '../data/statisticalSources';
+import {
+  EDUCATION_PRECISION_RULES,
+  EDUCATION_PROGRAM_CLASSIFICATIONS,
+  FUTURE_TALENT_METRICS,
+  WORKFORCE_FLOW_TERMS,
+  WORKFORCE_PRECISION_RULES
+} from '../data/statisticalFramework';
+
+const categoryLabels = {
+  'education-pipeline': 'Education pipeline',
+  'graduate-outcomes': 'Graduate outcomes',
+  employment: 'Employment',
+  'job-vacancies': 'Job vacancies',
+  'workforce-flow': 'Workforce flow',
+  'industry-workforce': 'Industry workforce'
+};
+
+const precisionLabels = {
+  'game-specific': 'Game-specific',
+  'game-adjacent': 'Game-adjacent',
+  'sector-proxy': 'Sector proxy',
+  'general-context': 'General context'
+};
+
+const sourcesByGeography = new Map<string, StatisticalSource[]>();
+for (const source of STATISTICAL_SOURCES.filter((candidate) => candidate.active)) {
+  const group = sourcesByGeography.get(source.geography) ?? [];
+  group.push(source);
+  sourcesByGeography.set(source.geography, group);
+}
+---
+<BaseLayout title="Statistical sources · Game Industry Observatory">
+  <section class="hero compact">
+    <p class="eyebrow">Talent pipeline &amp; workforce flow</p>
+    <h1>Statistical source registry</h1>
+    <p class="lede">Official and sector datasets that can measure who enters game-development education, what happens after graduation, and how workers move. Inclusion identifies a possible observation base; it does not make unlike datasets interchangeable.</p>
+  </section>
+
+  <section class="data-key" aria-label="Registry principles">
+    <div><strong>{STATISTICAL_SOURCES.filter((source) => source.active).length} sources</strong><span>kept separate from news reporting</span></div>
+    <div><strong>Official first</strong><span>administrative and accredited statistics preferred</span></div>
+    <div><strong>Precision labelled</strong><span>game-specific, adjacent, proxy or context</span></div>
+    <div><strong>Unavailable is valid</strong><span>no cross-country extrapolation to fill gaps</span></div>
+  </section>
+
+  <section class="panel prose statistical-intro">
+    <h2>What this will eventually show</h2>
+    <p>The planned measures are defined now, but no values are published until a repeatable collection can preserve the source release, classification and transformation.</p>
+    <ul>
+      {FUTURE_TALENT_METRICS.map((metric) => <li><strong>{metric.label}:</strong> {metric.definition}</li>)}
+    </ul>
+    <p>A future graduate-to-entry-opportunity ratio will compare trailing-12-month flows on both sides. It will not be described as a chance of employment, placement probability or competition per job.</p>
+  </section>
+
+  <div class="source-list statistical-registry">
+    {[...sourcesByGeography.entries()].map(([geography, sources]) => (
+      <section class="source-section" aria-labelledby={`statistical-${geography.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+        <div class="source-section-heading">
+          <h2 id={`statistical-${geography.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{geography}</h2>
+          <p>{sources.length} official or sector dataset{sources.length === 1 ? '' : 's'}</p>
+        </div>
+        <div class="source-table-wrap">
+          <table class="source-table statistical-source-table">
+            <thead><tr><th>Source</th><th>Category</th><th>Precision</th><th>Frequency</th><th>Used for</th><th>Key limitation</th></tr></thead>
+            <tbody>
+              {sources.map((source) => (
+                <tr>
+                  <td><a href={source.url}>{source.name}</a><small>{source.publisher}</small></td>
+                  <td>{categoryLabels[source.category]}</td>
+                  <td><span class={`precision precision--${source.gamesPrecision}`}>{precisionLabels[source.gamesPrecision]}</span></td>
+                  <td>{source.frequency}</td>
+                  <td>{source.role}</td>
+                  <td>{source.limitations}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <section class="panel prose classification-framework">
+    <p class="eyebrow">Classification rules</p>
+    <h2>Similar labels do not imply similar populations</h2>
+    <div class="framework-columns">
+      <div><h3>Education</h3><ul>{EDUCATION_PRECISION_RULES.map((rule) => <li><strong>{rule.label}:</strong> {rule.definition}</li>)}</ul></div>
+      <div><h3>Workforce</h3><ul>{WORKFORCE_PRECISION_RULES.map((rule) => <li><strong>{rule.label}:</strong> {rule.definition}</li>)}</ul></div>
+    </div>
+    <p>Game-specific and game-adjacent education are never combined and labelled “game-development graduates”.</p>
+    <h3>Reviewed game-specific classifications</h3>
+    <ul>
+      {EDUCATION_PROGRAM_CLASSIFICATIONS.map((classification) => (
+        <li><strong>{classification.geography} · {classification.system} {classification.code}:</strong> {classification.label} ({classification.version})</li>
+      ))}
+    </ul>
+    <p><strong>Netherlands:</strong> unavailable until a programme-level DUO classification list has been reviewed. The reporting run will not guess this list.</p>
+  </section>
+
+  <section class="panel prose">
+    <p class="eyebrow">Flow terminology</p>
+    <h2>Professional outflow is not one number</h2>
+    <ul>{WORKFORCE_FLOW_TERMS.map((term) => <li><strong>{term.label}:</strong> {term.definition}</li>)}</ul>
+  </section>
+</BaseLayout>

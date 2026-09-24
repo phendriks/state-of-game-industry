@@ -12,7 +12,7 @@ const snapshotMetrics = snapshot
   ? SNAPSHOT_INDICATORS.map((indicator) => {
       const metric = metricsById.get(snapshot[indicator.key]);
       return metric ? { ...metric, dashboardLabel: indicator.label } : undefined;
-    }).filter((metric): metric is Metric & { dashboardLabel: string } => Boolean(metric))
+    }).filter((metric): metric is NonNullable<typeof metric> => metric !== undefined)
   : [];
 const featuredMetrics = snapshot
   ? snapshotMetrics
