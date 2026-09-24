@@ -45,7 +45,7 @@ export const NEWS_SOURCE_CATEGORIES: SourceCategory[] = [
       { name: 'Perforce State of Real-Time Workflows', url: 'https://www.perforce.com/resources/vcs/state-of-real-time-workflows', coverage: 'Tools, workflows, AI use and workforce concerns across real-time technology users', cadence: 'Annual', type: 'Research / survey', language: 'English', geographic_focus: 'Global', notes: 'The respondent population extends beyond games and must not be presented as games-only.' },
       { name: 'Skillsearch Games & Immersive Survey', url: 'https://www.skillsearch.com/assets/reports/skillsearch_games_and_immersive_salary_and_satisfaction_report_2026.pdf', coverage: 'Pay, benefits, mobility and job satisfaction among games and immersive professionals', cadence: 'Annual', type: 'Research / survey', language: 'English', geographic_focus: 'Global' },
       { name: 'Ukie Workforce Demographics Survey', url: 'https://ukie.org.uk/raise-the-game', coverage: 'Roles, demographics, job losses and working experiences in the UK games workforce', cadence: 'Periodic', type: 'Trade body', language: 'English', geographic_focus: 'United Kingdom', notes: 'Trade-body publication; survey work may be produced with external research partners.' },
-      { name: 'Take This industry research', url: 'https://www.takethis.org/2026/03/research-report-take-this-2025-mental-health-in-the-games-industry/', coverage: 'Mental health, burnout, workplace stressors and support in game development', cadence: 'Periodic', type: 'Research / survey', language: 'English', geographic_focus: 'Primarily North America' }
+      { name: 'Take This industry research', url: 'https://www.takethis.org/expertcontent/research/', coverage: 'Workplace wellbeing, burnout, workplace stressors and support in game development', cadence: 'Periodic', type: 'Research / survey', language: 'English', geographic_focus: 'Primarily North America' }
     ]
   },
   {
@@ -80,7 +80,7 @@ export const NEWS_SOURCE_CATEGORIES: SourceCategory[] = [
   {
     id: 'corporate',
     name: 'Corporate & financial',
-    description: 'Primary filings and market data used to track company health.',
+    description: 'Primary filings and market data used to track company performance.',
     sources: [
       { name: 'Microsoft Investor Relations', url: 'https://www.microsoft.com/en-us/Investor', coverage: 'Xbox revenue and Microsoft earnings', cadence: 'Quarterly' },
       { name: 'Ubisoft Investor Center', url: 'https://www.ubisoft.com/en-us/company/about-us/investors', coverage: 'Bookings, guidance and corporate announcements', cadence: 'Quarterly' },
