@@ -1,32 +1,29 @@
 # Game Industry Observatory
 
-https://phendriks.github.io/state-of-game-industry/
+Static and fully AI-assisted webpage that observes the 'state' of the games industry.
 
-A static, AI-assisted observatory built from individually inspectable sources and observations.
+https://phendriks.github.io/state-of-game-industry/
 
 - The stored research flow is **source → observation → interpretation**.
 - The reading flow is **interpretation → observation → source → origin or relationship**.
 
-## Publishing model
+## Report publishing
 
-- `src/data/reports/YYYY-MM-DD.md` is the canonical artifact for each observation period.
 - The homepage automatically renders the latest monthly report.
-- `/reports/YYYY-MM-DD/` provides permanent historical report pages.
-- `/history/` tracks reported, calculated, forecast and estimated metrics stored with each report; it does not calculate a composite index.
-- `src/data/newsSources.ts` is the canonical source registry and required starting input for every reporting run.
-- Each metric uses an exact source name from that registry and records its scope and observation date. An unregistered source fails validation.
-- `/sources/` publishes that registry; `/submit-source/` guides contributors through a reviewable pull request.
-- GitHub is used to keep history of every report and methodology change.
-
-Set `human_reviewed: true` only after a person has checked the report. A non-empty `reviewer` name is then required by the content schema; leave the review flag `false` and omit `reviewer` otherwise.
-
-Source suggestions are proposed as edits to `NEWS_SOURCE_CATEGORIES`. The repository owner reviews each pull request before merging it. Keeping collection inputs and the public Sources page in the same file makes source-list changes and contributors inspectable in Git history.
+- `src/data/reports/YYYY-MM-DD.md` provides permanent historical report pages.
+- `/history/` tracks published reports.
+- `/newsSources.ts` is the source registry.
+- `/submit-source/` guides contributors through a reviewable pull request.
+- Reports are `human_reviewed: false` unless a person has verified report validity.
 
 ## Monthly automation
 
-`.github/workflows/monthly-report.yml` runs on the 24th of each month in the Europe/Amsterdam timezone and uses the centralized `gpt-6-luna` default with medium reasoning effort. It covers the 24th of the preceding month through the 23rd of the publication month, validates the resulting report, builds the site and commits the canonical Markdown artifact.
+Each monthly automation..:
+- ..runs on the 24th of each month and uses `gpt-6-luna` with medium reasoning;
+- ..covers the 24th of the preceding month through the 23rd of the publication month;
+- ..generated a validated report, then builds and deploys to the site.
 
-New observations require an exact registered source name, a publication date inside the monthly window, an evidence URL on the registered source's domain and an evidence excerpt. Older observations can be carried forward for a category-specific period without changing their observation date. A failed collection, validation or build does not commit or deploy anything.
+Older observations can be carried forward for a category-specific period without changing their observation date. A failed collection, validation or build does not commit or deploy anything.
 
 ## AI and coverage disclosure
 
