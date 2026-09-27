@@ -135,7 +135,32 @@ const talentPipelineSchema = z.object({
   }).optional()
 });
 
+const baselineFindingSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().trim().min(1),
+  observation_ids: z.array(metricReferenceSchema).min(1),
+  limitation: z.string().trim().min(1)
+});
+
+const releaseEvidenceSchema = z.object({
+  game: z.string().trim().min(1),
+  developer: z.string().trim().min(1).optional(),
+  publisher: z.string().trim().min(1),
+  parent_company: z.string().trim().min(1).optional(),
+  release_date: z.coerce.date().optional(),
+  commercial_signal: z.string().trim().min(1),
+  measurement_type: z.enum(['Reported', 'Estimate', 'Observed', 'Forecast', 'Survey', 'Proxy']),
+  source: z.string().refine((source) => registeredSourceNames.has(source), {
+    message: 'Release source must exactly match a source in src/data/newsSources.ts.'
+  }),
+  source_url: z.string().url().optional(),
+  geography: z.string().trim().min(1),
+  reference_period: z.string().trim().min(1),
+  limitation: z.string().trim().min(1)
+});
+
 const reportSchema = z.object({
+  report_type: z.enum(['monthly_snapshot', 'year_to_date_baseline']).default('monthly_snapshot'),
   title: z.string(),
   published: z.coerce.date(),
   period_start: z.coerce.date(),
@@ -150,7 +175,11 @@ const reportSchema = z.object({
   snapshot: snapshotSchema.optional(),
   metrics: z.array(metricSchema),
   statistical_observations: z.array(statisticalObservationSchema).optional(),
-  talent_pipeline: talentPipelineSchema.optional()
+  talent_pipeline: talentPipelineSchema.optional(),
+  baseline_findings: z.array(baselineFindingSchema).optional(),
+  commercially_significant_releases: z.array(releaseEvidenceSchema).optional(),
+  anticipated_releases: z.array(releaseEvidenceSchema).optional(),
+  research_limitations: z.array(z.string().trim().min(1)).optional()
 }).superRefine((report, context) => {
   if (report.human_reviewed && !report.reviewer) {
     context.addIssue({
@@ -227,6 +256,17 @@ const reportSchema = z.object({
           path: ['snapshot', indicator.key],
           message: `${indicator.label} cannot reference ${metricId}.`
         });
+      }
+    }
+  }
+
+  if (report.baseline_findings) {
+    const metricIds = new Set(report.metrics.map((metric) => metric.id));
+    for (const finding of report.baseline_findings) {
+      for (const observationId of finding.observation_ids) {
+        if (!metricIds.has(observationId)) {
+          context.addIssue({ code: z.ZodIssueCode.custom, path: ['baseline_findings'], message: `Baseline finding references missing metric ${observationId}.` });
+        }
       }
     }
   }

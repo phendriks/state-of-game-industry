@@ -1,10 +1,13 @@
 ---
 import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SnapshotOverview from '../components/SnapshotOverview.astro';
 import ReportDataTables from '../components/ReportDataTables.astro';
 import EvidenceBase from '../components/EvidenceBase.astro';
-const reports = (await getCollection('reports')).sort((a,b) => b.data.published.getTime() - a.data.published.getTime());
+const reports = (await getCollection('reports'))
+  .filter((report: CollectionEntry<'reports'>)=>report.data.report_type!=='year_to_date_baseline')
+  .sort((a: CollectionEntry<'reports'>,b: CollectionEntry<'reports'>) => b.data.published.getTime() - a.data.published.getTime());
 const latest = reports[0];
 const { Content } = await render(latest);
 type SignalMetric={id:string;display_value:string;detail:string};
