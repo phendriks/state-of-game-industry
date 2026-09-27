@@ -66,6 +66,7 @@ anticipated_releases:
   - { game: over the hill, publisher: Not returned by Steam API at collection, commercial_signal: "#19 on Steam's most-wishlisted upcoming-games page at collection", measurement_type: Observed, source: Steam user reviews, source_url: https://store.steampowered.com/app/2929250/over_the_hill/, geography: Global Steam storefront, reference_period: 27 September 2026 capture, limitation: "Post-cutoff observation; publisher metadata and wishlist count were not returned." }
   - { game: Nivalis Nights, publisher: Not returned by Steam API at collection, commercial_signal: "#20 on Steam's most-wishlisted upcoming-games page at collection", measurement_type: Observed, source: Steam user reviews, source_url: https://store.steampowered.com/app/1488490/Nivalis_Nights/, geography: Global Steam storefront, reference_period: 27 September 2026 capture, limitation: "Post-cutoff observation; publisher metadata and wishlist count were not returned." }
 research_limitations:
+  - The market and DevQuest dashboard cards are post-cutoff context copied from the 24 September snapshot; their dates remain visible and they are excluded from Report Zero's baseline findings.
   - No public statistical series observed actual movement into and out of games employment with game-specific precision; broad-sector labour-flow proxies are not presented as games data.
   - The United States graduate figure counts awards rather than unique people and cannot be treated as the number of workers entering games.
   - Circana's July tables were published after the 23 August cutoff; they are retained only as reporting-lag evidence about an in-window month.
@@ -104,6 +105,192 @@ talent_pipeline:
     observation_ids: [us_game_specific_awards_2024]
     note: Latest official game-specific completion baseline released inside the report window; not a global total or industry-inflow count.
 metrics:
+  - id: global_games_revenue
+    label: Global games revenue
+    value: 213.9
+    display_value: $213.9B
+    detail: +6.1% year over year; post-cutoff 2026 forecast
+    scope: Global market; 2026 full year
+    unit: billion US dollars
+    category: Market
+    kind: Forecast
+    observed_on: 2026-12-31
+    period_start: 2026-01-01
+    period_end: 2026-12-31
+    published_on: 2026-09-15
+    collected_on: 2026-09-24
+    source: Newzoo
+    source_url: https://newzoo.com/articles/executive-summary-ggmr-2026-free-edition
+    origin: Newzoo
+    source_relationship: Original source
+    evidence_excerpt: The global games market is forecast to generate $213.9 billion in 2026.
+    carried_forward: true
+  - id: global_players
+    label: Global players
+    value: 3.7
+    display_value: 3.70B
+    detail: +4.4% year over year; post-cutoff 2026 forecast
+    scope: Global market; 2026 full year
+    unit: billion players
+    category: Players
+    kind: Forecast
+    observed_on: 2026-12-31
+    period_start: 2026-01-01
+    period_end: 2026-12-31
+    published_on: 2026-09-15
+    collected_on: 2026-09-24
+    source: Newzoo
+    source_url: https://newzoo.com/articles/executive-summary-ggmr-2026-free-edition
+    origin: Newzoo
+    source_relationship: Original source
+    evidence_excerpt: The global player base is forecast to reach 3.70 billion in 2026.
+    carried_forward: true
+  - id: global_spenders
+    label: Global spenders
+    value: 1.65
+    display_value: 1.65B
+    detail: Post-cutoff 2026 market forecast
+    scope: Global market; 2026 full year
+    unit: billion spenders
+    category: Players
+    kind: Forecast
+    observed_on: 2026-12-31
+    period_start: 2026-01-01
+    period_end: 2026-12-31
+    published_on: 2026-09-15
+    collected_on: 2026-09-24
+    source: Newzoo
+    source_url: https://newzoo.com/articles/executive-summary-ggmr-2026-free-edition
+    origin: Newzoo
+    source_relationship: Original source
+    evidence_excerpt: The number of spenders is expected to rise to 1.65 billion.
+    carried_forward: true
+  - id: open_roles
+    label: Tracked open roles
+    value: 6171
+    display_value: 6,171
+    detail: Post-cutoff snapshot across 315 studios
+    scope: DevQuest tracked companies; not the global industry
+    unit: open positions
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: The tracked dataset contained 6,171 open positions across 315 studios.
+    carried_forward: true
+  - id: tracked_studios
+    label: Studios with open roles
+    value: 315
+    display_value: "315"
+    detail: Studios represented in the post-cutoff hiring snapshot
+    scope: DevQuest tracked companies; not the global industry
+    unit: studios
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: The tracked dataset represented 315 studios with open positions.
+    carried_forward: true
+  - id: entry_level_role_share
+    label: Entry-level role share
+    value: 5.9
+    display_value: 5.9%
+    detail: 366 of 6,171 tracked openings; post-cutoff snapshot
+    scope: DevQuest tracked vacancies; not the global industry
+    unit: percent of tracked openings
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: Entry-level roles represented 366 of 6,171 tracked openings.
+    carried_forward: true
+  - id: entry_level_roles
+    label: Entry-level roles
+    value: 366
+    display_value: "366"
+    detail: 5.9% of tracked openings in the post-cutoff snapshot
+    scope: DevQuest tracked vacancies; not the global industry
+    unit: open positions
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: The tracked dataset contained 366 entry-level openings.
+    carried_forward: true
+  - id: engineering_role_share
+    label: Engineering role share
+    value: 30.4
+    display_value: 30.4%
+    detail: 1,879 of 6,171 tracked openings; post-cutoff snapshot
+    scope: DevQuest tracked vacancies; not the global industry
+    unit: percent of tracked openings
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: Engineering represented 1,879 of 6,171 tracked openings.
+    carried_forward: true
+  - id: engineering_roles
+    label: Engineering roles
+    value: 1879
+    display_value: 1,879
+    detail: 30.4% of tracked openings in the post-cutoff snapshot
+    scope: DevQuest tracked vacancies; not the global industry
+    unit: open positions
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: The tracked dataset contained 1,879 engineering openings.
+    carried_forward: true
+  - id: hiring_concentration_top_20
+    label: Hiring concentration among top 20 tracked companies
+    value: 49
+    display_value: 49%
+    detail: Share of tracked openings at the top 20 companies; post-cutoff snapshot
+    scope: DevQuest tracked vacancies; not the global industry
+    unit: percent of tracked openings
+    category: Employment
+    kind: Reported
+    observed_on: 2026-09-22
+    published_on: 2026-09-22
+    collected_on: 2026-09-24
+    source: DevQuest hiring report
+    source_url: https://devquest.gg/game-industry-hiring-report
+    origin: DevQuest tracked job dataset
+    source_relationship: Original source
+    evidence_excerpt: The top 20 tracked companies accounted for 49% of tracked openings.
+    carried_forward: true
   - { id: confirmed_layoffs_2026, label: Confirmed 2026 layoffs, value: 10140, display_value: "10,140", detail: "Tracked through 11 August; documented minimum", scope: ASGC tracked announcements, unit: people, category: Employment, kind: Reported, observed_on: 2026-08-11, published_on: 2026-08-30, collected_on: 2026-09-27, source: ASGC layoffs tracker, source_url: https://layoffs.asgc.gg/, origin: ASGC event tracker, source_relationship: Original source, evidence_excerpt: "10,140 confirmed through 11 August." }
   - { id: gdc_workers_laid_off_two_years, label: Developers laid off in two years, value: 28, display_value: "28%", detail: Share of GDC 2026 respondents, scope: GDC State of the Game Industry survey respondents, unit: percent, category: Employment, kind: Reported, observed_on: 2026-01-28, published_on: 2026-01-28, collected_on: 2026-09-27, source: GDC State of the Game Industry, source_url: https://gdconf.com/article/gdc-2026-state-of-the-game-industry-reveals-impact-of-layoffs-generative-ai-and-more/, origin: GDC 2026 survey, source_relationship: Original source, evidence_excerpt: "Over one in four respondents had been laid off in the prior two years." }
   - { id: gdc_employers_with_layoffs, label: Respondents whose employer conducted layoffs, value: 50, display_value: "50%", detail: Current or most recent employer in the prior 12 months, scope: GDC State of the Game Industry survey respondents, unit: percent, category: Employment, kind: Reported, observed_on: 2026-01-28, published_on: 2026-01-28, collected_on: 2026-09-27, source: GDC State of the Game Industry, source_url: https://gdconf.com/article/gdc-2026-state-of-the-game-industry-reveals-impact-of-layoffs-generative-ai-and-more/, origin: GDC 2026 survey, source_relationship: Original source, evidence_excerpt: "Half reported layoffs at their current or most recent employer." }
