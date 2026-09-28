@@ -1,4 +1,4 @@
 export const REPORT_MODEL_CONFIG = {
-  defaultModel: 'gpt-6-luna',
+  defaultModel: process.env.OPENAI_MODEL || 'gpt-6-luna',
   reasoningEffort: 'medium'
 } as const;

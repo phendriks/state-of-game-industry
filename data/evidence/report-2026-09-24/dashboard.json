@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "report-2026-09-24",
+  "fixed": [
+    {
+      "id": "global_games_revenue",
+      "label": "Global games revenue",
+      "value": 213.9,
+      "secondary_value": "+6.1% year over year",
+      "unit": "billion US dollars",
+      "status": "forecast",
+      "observation_ids": [
+        "report-2026-09-24-global-games-revenue"
+      ]
+    },
+    {
+      "id": "global_players",
+      "label": "Global players",
+      "value": 3.7,
+      "secondary_value": "+4.4% year over year",
+      "unit": "billion players",
+      "status": "forecast",
+      "observation_ids": [
+        "report-2026-09-24-global-players"
+      ]
+    },
+    {
+      "id": "global_spenders",
+      "label": "Global spenders",
+      "value": 1.65,
+      "secondary_value": "2026 market forecast",
+      "unit": "billion spenders",
+      "status": "forecast",
+      "observation_ids": [
+        "report-2026-09-24-global-spenders"
+      ]
+    },
+    {
+      "id": "new_job_listings",
+      "label": "Roles opened in seven days",
+      "value": 451,
+      "secondary_value": "Newly listed positions",
+      "unit": null,
+      "status": "reported",
+      "observation_ids": [
+        "report-2026-09-24-new-roles-seven-days"
+      ]
+    },
+    {
+      "id": "entry_level_role_share",
+      "label": "Entry-level role share",
+      "value": 5.9,
+      "secondary_value": "366 of 6,171 tracked openings",
+      "unit": null,
+      "status": "reported",
+      "observation_ids": [
+        "report-2026-09-24-entry-level-role-share"
+      ]
+    },
+    {
+      "id": "mid_level_role_share",
+      "label": "Mid-level role share",
+      "value": 47.7,
+      "secondary_value": "2,942 of 6,171 tracked openings",
+      "unit": "percent of tracked openings",
+      "status": "derived",
+      "observation_ids": [
+        "report-2026-09-24-mid-level-role-share"
+      ]
+    },
+    {
+      "id": "current_year_layoffs",
+      "label": "Confirmed 2026 layoffs",
+      "value": 10140,
+      "secondary_value": "Confirmed total in the tracker",
+      "unit": "count",
+      "status": "reported",
+      "observation_ids": [
+        "report-2026-09-24-confirmed-layoffs-2026"
+      ]
+    },
+    {
+      "id": "projected_layoffs",
+      "label": "Forecast 2026 layoffs",
+      "value": 14666,
+      "secondary_value": "Full-year projection",
+      "unit": "count",
+      "status": "forecast",
+      "observation_ids": [
+        "report-2026-09-24-forecast-layoffs-2026"
+      ]
+    }
+  ],
+  "finding_specific": [
+    {
+      "id": "finding-market-signal",
+      "label": "Market scale remained substantial",
+      "value": null,
+      "status": "not comparable",
+      "observation_ids": [
+        "report-2026-09-24-global-games-revenue",
+        "report-2026-09-24-us-games-spending-july-2026",
+        "report-2026-09-24-us-games-hardware-spending-july-2026"
+      ],
+      "finding_id": "market-signal"
+    }
+  ]
+}

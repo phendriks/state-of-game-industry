@@ -1,0 +1,13 @@
+{
+  "run_id": "baseline-2026-08-23",
+  "window_start": "2025-08-24",
+  "window_end": "2026-08-23",
+  "schema_version": "1.0.0",
+  "methodology_version": "evidence-v1",
+  "model": "historical-regeneration",
+  "reasoning_effort": "manual-review",
+  "source_registry_commit": "working-tree",
+  "started_at": "2026-09-28T00:00:00Z",
+  "completed_at": "2026-09-28T00:00:00Z",
+  "status": "complete"
+}

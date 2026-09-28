@@ -190,4 +190,3 @@ export const EDUCATION_PROGRAM_CLASSIFICATIONS: EducationProgramClassification[]
 
 // Dutch programmes will be added only after programme identities have been checked
 // against DUO data. An empty list is preferable to reclassifying programmes by AI.
-export const DUTCH_GAME_PROGRAM_CLASSIFICATIONS: EducationProgramClassification[] = [];

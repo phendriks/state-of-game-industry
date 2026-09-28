@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "entities": [
+    { "schema_version": "1.0.0", "entity_id": "microsoft", "canonical_name": "Microsoft", "entity_type": "parent_company", "aliases": ["Microsoft Corporation"], "parent_entity_id": null, "active": true },
+    { "schema_version": "1.0.0", "entity_id": "xbox-game-studios", "canonical_name": "Xbox Game Studios", "entity_type": "publisher", "aliases": ["Xbox", "Microsoft Gaming"], "parent_entity_id": "microsoft", "active": true },
+    { "schema_version": "1.0.0", "entity_id": "sony-group", "canonical_name": "Sony Group", "entity_type": "parent_company", "aliases": ["Sony Group Corporation"], "parent_entity_id": null, "active": true },
+    { "schema_version": "1.0.0", "entity_id": "sony-interactive-entertainment", "canonical_name": "Sony Interactive Entertainment", "entity_type": "publisher", "aliases": ["SIE", "PlayStation"], "parent_entity_id": "sony-group", "active": true },
+    { "schema_version": "1.0.0", "entity_id": "ubisoft-sa", "canonical_name": "Ubisoft SA", "entity_type": "parent_company", "aliases": ["Ubisoft Group"], "parent_entity_id": null, "active": true },
+    { "schema_version": "1.0.0", "entity_id": "ubisoft-entertainment", "canonical_name": "Ubisoft Entertainment", "entity_type": "publisher", "aliases": ["Ubisoft"], "parent_entity_id": "ubisoft-sa", "active": true },
+    { "schema_version": "1.0.0", "entity_id": "capcom", "canonical_name": "Capcom", "entity_type": "publisher", "aliases": ["Capcom Co., Ltd."], "parent_entity_id": null, "active": true },
+    { "schema_version": "1.0.0", "entity_id": "electronic-arts", "canonical_name": "Electronic Arts", "entity_type": "publisher", "aliases": ["EA"], "parent_entity_id": null, "active": true },
+    { "schema_version": "1.0.0", "entity_id": "assassins-creed", "canonical_name": "Assassin's Creed", "entity_type": "franchise", "aliases": ["Assassins Creed"], "parent_entity_id": "ubisoft-entertainment", "active": true },
+    { "schema_version": "1.0.0", "entity_id": "assassins-creed-black-flag", "canonical_name": "Assassin's Creed IV: Black Flag", "entity_type": "game", "aliases": ["Black Flag"], "parent_entity_id": "assassins-creed", "active": true }
+  ]
+}

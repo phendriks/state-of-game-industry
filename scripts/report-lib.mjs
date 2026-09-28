@@ -25,6 +25,7 @@ export function reportWindow(published) {
   if (!match) throw new Error('Report date must be the 24th in YYYY-MM-24 format.');
   const year = Number(match[1]);
   const month = Number(match[2]);
+  if (month < 1 || month > 12) throw new Error('Report date contains an invalid month.');
   const previous = new Date(Date.UTC(year, month - 2, 24));
   return {
     published,
@@ -51,6 +52,7 @@ export async function readReport(file) {
 export async function latestReport(preferredName) {
   const names = (await fs.readdir(REPORTS_DIR))
     .filter((name) => /^\d{4}-\d{2}-\d{2}\.md$/.test(name))
+    .filter((name) => !preferredName || name <= preferredName)
     .sort().reverse();
   if (names.includes(preferredName)) return readReport(path.join(REPORTS_DIR, preferredName));
   if (!names.length) throw new Error('No earlier report is available as a safe baseline.');

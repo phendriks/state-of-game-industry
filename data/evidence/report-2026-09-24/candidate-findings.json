@@ -1,0 +1,14 @@
+[
+  {
+    "finding_id": "market-signal",
+    "title": "Market scale remained substantial",
+    "statement": "Market scale remained substantial",
+    "observation_ids": [
+      "report-2026-09-24-global-games-revenue",
+      "report-2026-09-24-us-games-spending-july-2026",
+      "report-2026-09-24-us-games-hardware-spending-july-2026"
+    ],
+    "status": "qualified",
+    "decision_reason": "Source scopes and periods remain separate."
+  }
+]

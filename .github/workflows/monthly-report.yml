@@ -11,7 +11,7 @@ on:
         required: false
         type: string
       dry_run:
-        description: Build and upload the report without committing or publishing
+        description: Build and upload the report and evidence without committing or deploying
         required: true
         default: true
         type: boolean
@@ -28,6 +28,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     outputs:
       publish: ${{ steps.mode.outputs.publish }}
     steps:
@@ -42,53 +43,60 @@ jobs:
           package-manager-cache: false
       - name: Install dependencies
         run: npm install
-      - name: Select report date
-        id: date
+      - name: Test monthly pipeline without API calls
+        run: npm run monthly:test
+      - name: Set publication mode
+        id: mode
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DRY_RUN: ${{ inputs.dry_run }}
         shell: bash
         run: |
-          if [[ -n "${{ inputs.report_date }}" ]]; then
-            echo "args=--report-date=${{ inputs.report_date }}" >> "$GITHUB_OUTPUT"
+          if [[ "$EVENT_NAME" == "schedule" || "$DRY_RUN" == "false" ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
           else
-            echo "args=" >> "$GITHUB_OUTPUT"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Generate monthly report
+      - name: Generate and validate evidence run
+        id: run
         env:
+          REPORT_DATE: ${{ inputs.report_date }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
           OPENAI_WIF_AUDIENCE: ${{ vars.OPENAI_WIF_AUDIENCE }}
           OPENAI_IDENTITY_PROVIDER_ID: ${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}
           OPENAI_SERVICE_ACCOUNT_ID: ${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npm run report:generate -- ${{ steps.date.outputs.args }}
-      - name: Validate monthly report
-        run: npm run report:validate -- ${{ steps.date.outputs.args }}
-      - name: Build site
-        run: npm run build
-      - name: Set publication mode
-        id: mode
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.dry_run }}" == "false" ]]; then
-            echo "publish=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "publish=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Upload dry-run report
-        if: steps.mode.outputs.publish == 'false'
+        run: npm run report:generate
+      - name: Prepare validated report and evidence; build site
+        env:
+          RUN_ID: ${{ steps.run.outputs.run_id }}
+        run: npm run pipeline:publish -- --run-id="$RUN_ID"
+      - name: Validate report compatibility
+        env:
+          REPORT_DATE: ${{ steps.run.outputs.report_date }}
+        run: npm run report:validate -- --report-date="$REPORT_DATE"
+      - name: Upload run evidence and diagnostics
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: monthly-report-dry-run
-          path: src/data/reports/*.md
-      - name: Commit report
+          name: ${{ steps.mode.outputs.publish == 'true' && 'monthly-report-evidence' || 'monthly-report-dry-run' }}
+          if-no-files-found: warn
+          path: |
+            data/runs/
+            src/data/reports/*.md
+      - name: Commit report and evidence together
         if: steps.mode.outputs.publish == 'true'
+        env:
+          REPORT_DATE: ${{ steps.run.outputs.report_date }}
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/reports
+          git add -- "src/data/reports/${REPORT_DATE}.md" "data/evidence/report-${REPORT_DATE}"
           if git diff --cached --quiet; then
-            echo "Report already matches the generated output."
+            echo "Report and evidence already match the generated output."
           else
-            git commit -m "publish monthly industry data snapshot"
+            git commit -m "publish monthly industry report and evidence"
             git push
           fi
       - name: Configure Pages

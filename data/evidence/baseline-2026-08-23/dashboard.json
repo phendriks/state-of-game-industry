@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "baseline-2026-08-23",
+  "fixed": [
+    {
+      "id": "global_games_revenue",
+      "label": "Global games revenue",
+      "value": 213.9,
+      "secondary_value": "+6.1% year over year; post-cutoff 2026 forecast",
+      "unit": "billion US dollars",
+      "status": "forecast",
+      "observation_ids": [
+        "baseline-2026-08-23-global-games-revenue"
+      ]
+    },
+    {
+      "id": "global_players",
+      "label": "Global players",
+      "value": 3.7,
+      "secondary_value": "+4.4% year over year; post-cutoff 2026 forecast",
+      "unit": "billion players",
+      "status": "forecast",
+      "observation_ids": [
+        "baseline-2026-08-23-global-players"
+      ]
+    },
+    {
+      "id": "global_spenders",
+      "label": "Global spenders",
+      "value": 1.65,
+      "secondary_value": "Post-cutoff 2026 market forecast",
+      "unit": "billion spenders",
+      "status": "forecast",
+      "observation_ids": [
+        "baseline-2026-08-23-global-spenders"
+      ]
+    },
+    {
+      "id": "new_job_listings",
+      "label": "New job listings",
+      "value": null,
+      "secondary_value": "No compatible observation in this report",
+      "unit": null,
+      "status": "data not found",
+      "observation_ids": []
+    },
+    {
+      "id": "entry_level_role_share",
+      "label": "Entry-level role share",
+      "value": 5.9,
+      "secondary_value": "366 of 6,171 tracked openings; post-cutoff snapshot",
+      "unit": "percent of tracked openings",
+      "status": "reported",
+      "observation_ids": [
+        "baseline-2026-08-23-entry-level-role-share"
+      ]
+    },
+    {
+      "id": "mid_level_role_share",
+      "label": "Mid-level role share",
+      "value": null,
+      "secondary_value": "No compatible observation in this report",
+      "unit": null,
+      "status": "data not found",
+      "observation_ids": []
+    },
+    {
+      "id": "current_year_layoffs",
+      "label": "Confirmed 2026 layoffs",
+      "value": 10140,
+      "secondary_value": "Tracked through 11 August; documented minimum",
+      "unit": "people",
+      "status": "reported",
+      "observation_ids": [
+        "baseline-2026-08-23-confirmed-layoffs-2026"
+      ]
+    },
+    {
+      "id": "projected_layoffs",
+      "label": "Projected layoffs",
+      "value": null,
+      "secondary_value": "No compatible observation in this report",
+      "unit": null,
+      "status": "data not found",
+      "observation_ids": []
+    }
+  ],
+  "finding_specific": [
+    {
+      "id": "finding-workforce_disruption_remained_widespread",
+      "label": "Workforce disruption remained widespread",
+      "value": null,
+      "status": "not comparable",
+      "observation_ids": [
+        "baseline-2026-08-23-confirmed-layoffs-2026",
+        "baseline-2026-08-23-gdc-workers-laid-off-two-years",
+        "baseline-2026-08-23-gdc-employers-with-layoffs"
+      ],
+      "finding_id": "workforce_disruption_remained_widespread"
+    },
+    {
+      "id": "finding-entry_pipeline_faced_a_difficult_market",
+      "label": "Students faced a difficult entry market",
+      "value": null,
+      "status": "not comparable",
+      "observation_ids": [
+        "baseline-2026-08-23-gdc-students-concerned-about-jobs",
+        "baseline-2026-08-23-confirmed-layoffs-2026"
+      ],
+      "finding_id": "entry_pipeline_faced_a_difficult_market"
+    },
+    {
+      "id": "finding-capital_activity_did_not_prove_employment_recovery",
+      "label": "Capital activity did not establish an employment recovery",
+      "value": null,
+      "status": "not comparable",
+      "observation_ids": [
+        "baseline-2026-08-23-games-private-investment-q2-2026",
+        "baseline-2026-08-23-games-ma-q2-2026",
+        "baseline-2026-08-23-confirmed-layoffs-2026"
+      ],
+      "finding_id": "capital_activity_did_not_prove_employment_recovery"
+    },
+    {
+      "id": "finding-publisher_results_remained_uneven",
+      "label": "Publisher performance remained uneven",
+      "value": null,
+      "status": "not comparable",
+      "observation_ids": [
+        "baseline-2026-08-23-tencent-domestic-games-revenue-q2-2026",
+        "baseline-2026-08-23-xbox-content-services-yoy",
+        "baseline-2026-08-23-ubisoft-q1-net-bookings-yoy",
+        "baseline-2026-08-23-capcom-quarterly-sales-yoy",
+        "baseline-2026-08-23-ea-fy26-net-bookings-yoy"
+      ],
+      "finding_id": "publisher_results_remained_uneven"
+    }
+  ]
+}

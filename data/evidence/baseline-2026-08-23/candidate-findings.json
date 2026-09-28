@@ -1,0 +1,51 @@
+[
+  {
+    "finding_id": "workforce_disruption_remained_widespread",
+    "title": "Workforce disruption remained widespread",
+    "statement": "Workforce disruption remained widespread",
+    "observation_ids": [
+      "baseline-2026-08-23-confirmed-layoffs-2026",
+      "baseline-2026-08-23-gdc-workers-laid-off-two-years",
+      "baseline-2026-08-23-gdc-employers-with-layoffs"
+    ],
+    "status": "qualified",
+    "decision_reason": "The layoff count is a tracked minimum and GDC percentages describe survey respondents, not the global workforce."
+  },
+  {
+    "finding_id": "entry_pipeline_faced_a_difficult_market",
+    "title": "Students faced a difficult entry market",
+    "statement": "Students faced a difficult entry market",
+    "observation_ids": [
+      "baseline-2026-08-23-gdc-students-concerned-about-jobs",
+      "baseline-2026-08-23-confirmed-layoffs-2026"
+    ],
+    "status": "qualified",
+    "decision_reason": "Student sentiment and layoffs do not measure actual graduate entry into games work."
+  },
+  {
+    "finding_id": "capital_activity_did_not_prove_employment_recovery",
+    "title": "Capital activity did not establish an employment recovery",
+    "statement": "Capital activity did not establish an employment recovery",
+    "observation_ids": [
+      "baseline-2026-08-23-games-private-investment-q2-2026",
+      "baseline-2026-08-23-games-ma-q2-2026",
+      "baseline-2026-08-23-confirmed-layoffs-2026"
+    ],
+    "status": "qualified",
+    "decision_reason": "Transactions and layoffs measure different processes; no causal relationship is inferred."
+  },
+  {
+    "finding_id": "publisher_results_remained_uneven",
+    "title": "Publisher performance remained uneven",
+    "statement": "Publisher performance remained uneven",
+    "observation_ids": [
+      "baseline-2026-08-23-tencent-domestic-games-revenue-q2-2026",
+      "baseline-2026-08-23-xbox-content-services-yoy",
+      "baseline-2026-08-23-ubisoft-q1-net-bookings-yoy",
+      "baseline-2026-08-23-capcom-quarterly-sales-yoy",
+      "baseline-2026-08-23-ea-fy26-net-bookings-yoy"
+    ],
+    "status": "qualified",
+    "decision_reason": "Reporting periods, currencies and segment definitions differ, so these observations are not a ranking."
+  }
+]
