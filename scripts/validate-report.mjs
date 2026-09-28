@@ -2,10 +2,10 @@ import path from 'node:path';
 import { NEWS_SOURCES } from '../src/data/newsSources.ts';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from '../src/data/snapshotIndicators.ts';
 import { STATISTICAL_SOURCES } from '../src/data/statisticalSources.ts';
-import { REPORTS_DIR, amsterdamDate, hostnameMatches, readReport, reportWindow } from './report-lib.mjs';
+import { REPORTS_DIR, resolveReportDate, hostnameMatches, readReport, reportWindow } from './report-lib.mjs';
 
-const requestedDate = process.argv.find((arg) => arg.startsWith('--report-date='))?.split('=')[1];
-const reportDate = requestedDate ?? amsterdamDate();
+const requestedDate = process.argv.find((arg) => arg.startsWith('--report-date='))?.slice('--report-date='.length);
+const reportDate = resolveReportDate(requestedDate ?? process.env.REPORT_DATE);
 const expected = reportWindow(reportDate);
 const file = path.join(REPORTS_DIR, `${reportDate}.md`);
 const { data, body } = await readReport(file);

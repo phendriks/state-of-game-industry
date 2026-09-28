@@ -7,7 +7,7 @@ import YAML from 'yaml';
 import { generateMonthlyRun } from './monthly-pipeline.mjs';
 import { collectMonthlyEvidence } from './collect-monthly-evidence.mjs';
 import { publishRun } from './publish-run.mjs';
-import { readReport, reportWindow } from './report-lib.mjs';
+import { amsterdamDate, readReport, reportWindow, resolveReportDate } from './report-lib.mjs';
 
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'observatory-monthly-'));
 const root = path.join(temporary, 'runs');
@@ -53,6 +53,17 @@ const fakeClient = { responses: { create: async (request) => {
 } } };
 
 try {
+  assert.equal(resolveReportDate(undefined, '2026-09-28'), '2026-09-24');
+  assert.equal(resolveReportDate('', '2026-09-24'), '2026-09-24');
+  assert.equal(resolveReportDate('   ', '2026-10-10'), '2026-09-24');
+  assert.equal(resolveReportDate(undefined, '2027-01-01'), '2026-12-24');
+  assert.equal(resolveReportDate(undefined, '2028-03-01'), '2028-02-24');
+  assert.equal(resolveReportDate(' 2026-08-24 ', '2026-09-28'), '2026-08-24');
+  assert.throws(() => resolveReportDate('2026-09-28'), /24th/);
+  assert.throws(() => resolveReportDate('dry_run'), /24th/);
+  assert.throws(() => resolveReportDate('2026-13-24'), /invalid month/);
+  assert.equal(amsterdamDate(new Date('2026-09-23T22:30:00Z')), '2026-09-24');
+  assert.equal(resolveReportDate(undefined, amsterdamDate(new Date('2026-10-23T22:30:00Z'))), '2026-10-24');
   const date = '2026-10-24';
   const runId = `report-${date}-test`;
   await generateMonthlyRun({ reportDate: date, runId, sourceRegistryCommit: 'test' }, { root, client: fakeClient, collect: collectFixture });

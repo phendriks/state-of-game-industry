@@ -20,6 +20,8 @@ https://phendriks.github.io/state-of-game-industry/
 
 The GitHub Actions workflow runs at 06:17 Europe/Amsterdam on the 24th of each month. The report covers the 24th of the preceding month through the 23rd of the publication month. The default model is `gpt-6-luna` with medium reasoning, configured in `src/data/reportConfig.ts`; the `OPENAI_MODEL` repository variable can override it for all stages.
 
+Leave the manual `report_date` input blank to use the most recent 24th in Amsterdam. For example, a dry run on 28 September uses 24 September; one on 10 October also uses 24 September. An explicit `YYYY-MM-24` input selects that publication date instead. Generation and validation use the same date resolver.
+
 Each run collects evidence from the canonical registries, validates atomic observations, calculates compatible metrics, generates candidate findings, challenges those findings, writes one report and validates the complete run. These are separate API requests within one monthly publication. Finding counts and summary length are not publication requirements. Missing indicators remain missing, and eligible prior observations retain their original dates.
 
 The acquisition plan records a 75-day research context window. New regular report metrics must still be published inside the monthly reporting window; older official statistics and retained observations are separately classified as context or historical evidence. Aggregate job and layoff totals are not treated as individual job postings or event records.

@@ -34,12 +34,23 @@ export function reportWindow(published) {
   };
 }
 
-export function amsterdamDate() {
+export function amsterdamDate(now = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).formatToParts(new Date());
+  }).formatToParts(now);
   const get = (type) => parts.find((part) => part.type === type)?.value;
   return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+export function resolveReportDate(requestedDate, today = amsterdamDate()) {
+  const explicit = requestedDate?.trim();
+  if (explicit) {
+    reportWindow(explicit);
+    return explicit;
+  }
+  const [year, month, day] = today.split('-').map(Number);
+  const latestPublication = new Date(Date.UTC(year, month - 1 - (day < 24 ? 1 : 0), 24));
+  return latestPublication.toISOString().slice(0, 10);
 }
 
 export async function readReport(file) {

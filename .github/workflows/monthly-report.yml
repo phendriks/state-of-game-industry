@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       report_date:
-        description: Optional YYYY-MM-24 date; defaults to today in Amsterdam
+        description: Optional YYYY-MM-24 date; leave blank for the latest monthly publication date in Amsterdam
         required: false
         type: string
       dry_run:
