@@ -8,6 +8,7 @@ import { generateMonthlyRun } from './monthly-pipeline.mjs';
 import { collectMonthlyEvidence } from './collect-monthly-evidence.mjs';
 import { publishRun } from './publish-run.mjs';
 import { amsterdamDate, readReport, reportWindow, resolveReportDate } from './report-lib.mjs';
+import { testPipelineOpenAI } from './test-pipeline-openai.mjs';
 
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'observatory-monthly-'));
 const root = path.join(temporary, 'runs');
@@ -53,6 +54,7 @@ const fakeClient = { responses: { create: async (request) => {
 } } };
 
 try {
+  await testPipelineOpenAI();
   assert.equal(resolveReportDate(undefined, '2026-09-28'), '2026-09-24');
   assert.equal(resolveReportDate('', '2026-09-24'), '2026-09-24');
   assert.equal(resolveReportDate('   ', '2026-10-10'), '2026-09-24');
@@ -107,6 +109,7 @@ try {
   const workflow = YAML.parse(await fs.readFile('.github/workflows/monthly-report.yml', 'utf8'));
   const steps = workflow.jobs.generate.steps;
   assert.equal(steps.find((step) => step.id === 'run').run, 'npm run report:generate');
+  assert.equal(steps.find((step) => step.id === 'run').env.OPENAI_MODEL, undefined, 'Actions must use the shared model, not a stale repository override');
   assert.ok(steps.some((step) => step.run?.includes('npm run pipeline:publish')));
   assert.ok(steps.some((step) => step.run?.includes('git add --') && step.run.includes('data/evidence/report-')));
   assert.ok(steps.some((step) => step.if === 'always()' && step.with?.path?.includes('data/runs/')));
@@ -134,6 +137,26 @@ try {
   const emptyDashboard = await readJson(path.join(root, emptyId, 'dashboard.json'));
   assert.ok(emptyDashboard.fixed.every((card) => card.value === null && card.status === 'data not found'));
   assert.equal((await readJson(path.join(root, emptyId, 'validation.json'))).status, 'passed');
+
+  // Invalid review sources warn and exclude the conclusion without blocking a report with valid data.
+  const warningId = 'report-2027-02-24-warning-test';
+  const warningClient = { responses: { create: async (request) => {
+    const response = await fakeClient.responses.create(request);
+    if (request.text?.format?.name !== 'challenged_findings') return response;
+    const payload = JSON.parse(response.output_text);
+    payload.reviews[0].counter_evidence = [{ claim: 'An unverifiable claim.', source_id: 'invented-source',
+      source_url: 'https://unapproved.example/claim', underlying_source_id: null, evidence_type: 'reported',
+      geography: 'Global', reference_period_start: '2027-01-24', reference_period_end: '2027-02-23' }];
+    return { output_text: JSON.stringify(payload) };
+  } } };
+  await generateMonthlyRun({ reportDate: '2027-02-24', runId: warningId }, { root, client: warningClient, collect: collectFixture });
+  assert.equal((await readJson(path.join(root, warningId, 'validation.json'))).status, 'passed');
+  assert.equal((await readJson(path.join(root, warningId, 'selected-findings.json'))).length, 0);
+  assert.equal((await readJson(path.join(root, warningId, 'finding-review-diagnostics.json'))).excluded_findings.length, 1);
+  const warningReport = await readReport(path.join(root, warningId, 'report.md'));
+  assert.equal(warningReport.data.metrics.find((metric) => metric.id === 'global_games_revenue').value, 213.9);
+  await publishRun(warningId, { root, reportsRoot, evidenceRoot, build: async () => {} });
+  await fs.access(path.join(evidenceRoot, 'report-2027-02-24', 'finding-review-diagnostics.json'));
 
   const badId = 'report-2027-01-24-test';
   await assert.rejects(generateMonthlyRun({ reportDate: '2027-01-24', runId: badId }, {

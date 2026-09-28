@@ -61,7 +61,6 @@ jobs:
         id: run
         env:
           REPORT_DATE: ${{ inputs.report_date }}
-          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
           OPENAI_WIF_AUDIENCE: ${{ vars.OPENAI_WIF_AUDIENCE }}
           OPENAI_IDENTITY_PROVIDER_ID: ${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}
           OPENAI_SERVICE_ACCOUNT_ID: ${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}

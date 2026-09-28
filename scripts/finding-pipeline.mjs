@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { candidateFindingCollectionSchemaV1, challengedFindingCollectionSchemaV1 } from '../src/data/evidence/schema-v1.ts';
+import { candidateFindingCollectionSchemaV1, challengedFindingCollectionSchemaV1, challengedFindingSchemaV1 } from '../src/data/evidence/schema-v1.ts';
 import { REPORT_MODEL_CONFIG } from '../src/data/reportConfig.ts';
 import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
@@ -71,25 +71,76 @@ export async function challengeCandidateFindings(runId, client = pipelineOpenAIC
   const derived = await readJson(path.join(base, RUN_STAGE_FILES['derived-metrics']));
   const discovery = await readSourceDiscovery(runId, root);
   const approvedSources = [...discovery.registry_sources, ...discovery.candidates.filter((item) => item.decision === 'accepted').map((item) => ({ source_id: item.candidate_id, canonical_url: item.canonical_url }))];
+  const approvedSourceIds = [...new Set(approvedSources.map((source) => source.source_id))];
+  const schema = structuredClone(reviewApiSchema);
+  const reviewProperties = schema.properties.reviews.items.properties;
+  reviewProperties.finding_id.enum = candidates.map((candidate) => candidate.finding_id);
+  reviewProperties.counter_evidence.items.properties.source_id.enum = approvedSourceIds;
+  reviewProperties.counter_evidence.items.properties.underlying_source_id.enum = [...approvedSourceIds, null];
   const response = await client.responses.create({ model: REPORT_MODEL_CONFIG.defaultModel, reasoning: { effort: REPORT_MODEL_CONFIG.reasoningEffort }, tools: [{ type: 'web_search', search_context_size: 'low' }],
-    text: { format: { type: 'json_schema', name: 'challenged_findings', strict: true, schema: reviewApiSchema } },
-    input: `Adversarially test every candidate. Ask what would make it wrong, incomplete or misleading. Check timing, recurring versus one-time effects, entity scope, geography, confirmation status and alternative explanations. Use only the supplied evidence and approved sources for counter-evidence. Return exactly one review per finding with status confirmed, qualified, resolved, rejected or insufficient_evidence. Do not force disagreement.\nCandidates: ${JSON.stringify(candidates)}\nObservations: ${JSON.stringify(observations)}\nEvents: ${JSON.stringify(events)}\nDerived metrics: ${JSON.stringify(derived)}\nApproved sources: ${JSON.stringify(approvedSources)}` });
-  const reviews = JSON.parse(response.output_text).reviews;
+    text: { format: { type: 'json_schema', name: 'challenged_findings', strict: true, schema } },
+    input: `Adversarially test every candidate. Ask what would make it wrong, incomplete or misleading. Check timing, recurring versus one-time effects, entity scope, geography, confirmation status and alternative explanations. Use only the supplied evidence and approved sources for counter-evidence. Counter-evidence source_id and underlying_source_id must be source IDs from Approved sources, NEVER observation IDs or finding IDs. source_url must be the exact evidence URL from that approved source. Return empty counter_evidence when no verifiable counter-evidence exists; do not invent a source. Return exactly one review per finding with status confirmed, qualified, resolved, rejected or insufficient_evidence. Do not force disagreement.\nCandidates: ${JSON.stringify(candidates)}\nObservations: ${JSON.stringify(observations)}\nEvents: ${JSON.stringify(events)}\nDerived metrics: ${JSON.stringify(derived)}\nApproved sources: ${JSON.stringify(approvedSources)}` });
+  let originalReviews = null;
+  let responseWarning = null;
+  try { originalReviews = JSON.parse(response.output_text)?.reviews; }
+  catch { responseWarning = 'Review response is not valid JSON; continuing without reviewed findings.'; }
+  if (!Array.isArray(originalReviews) && !responseWarning) responseWarning = 'Review response has no review list; continuing without reviewed findings.';
+  const reviews = Array.isArray(originalReviews) ? originalReviews : [];
+  const diagnostics = { run_id: runId, original_output_text: response.output_text ?? null, original_reviews: originalReviews ?? null,
+    warnings: responseWarning ? [responseWarning] : [], id_corrections: [], excluded_findings: [] };
+  if (responseWarning) console.warn(responseWarning);
+  const diagnosticsFile = path.join(base, 'finding-review-diagnostics.json');
+  await fs.writeFile(diagnosticsFile, `${JSON.stringify(diagnostics, null, 2)}\n`);
   const candidateMap = new Map(candidates.map((item) => [item.finding_id, item]));
-  if (reviews.length !== candidates.length || new Set(reviews.map((item) => item.finding_id)).size !== candidates.length) throw new Error('Adversarial review must return exactly one unique result per candidate.');
+  for (const review of reviews) if (!candidateMap.has(review?.finding_id)) {
+    const message = `Ignoring review for unknown finding ${review?.finding_id ?? '(missing ID)'}.`;
+    diagnostics.warnings.push(message);
+    console.warn(message);
+  }
   const sourceById = new Map(approvedSources.map((source) => [source.source_id, source]));
-  const challenged = challengedFindingCollectionSchemaV1.parse(reviews.map((review) => {
-    const candidate = candidateMap.get(review.finding_id); if (!candidate) throw new Error(`Review references unknown finding ${review.finding_id}.`);
-    for (const evidence of review.counter_evidence) {
+  const observationById = new Map(observations.map((observation) => [observation.observation_id, observation]));
+  const challenged = challengedFindingCollectionSchemaV1.parse(candidates.map((candidate) => {
+    const matches = reviews.filter((review) => review?.finding_id === candidate.finding_id);
+    const review = matches.length === 1 ? matches[0] : { finding_id: candidate.finding_id, counter_evidence: [] };
+    const issues = [];
+    if (matches.length !== 1) issues.push(matches.length ? 'Duplicate reviews for this finding.' : 'No review returned for this finding.');
+    if (!Array.isArray(review.counter_evidence)) issues.push('Counter-evidence is missing or malformed.');
+    const counterEvidence = (Array.isArray(review.counter_evidence) ? review.counter_evidence : []).map((originalEvidence) => {
+      const evidence = { ...originalEvidence };
+      // Recover only an unambiguous ID/URL mix-up against an already validated observation.
+      const observation = observationById.get(evidence.source_id);
+      if (!sourceById.has(evidence.source_id) && observation && evidence.source_url === observation.source_url && sourceById.has(observation.source_id)) {
+        diagnostics.id_corrections.push({ finding_id: review.finding_id, original_source_id: evidence.source_id, source_id: observation.source_id, source_url: evidence.source_url });
+        console.warn(`Finding ${review.finding_id}: corrected observation/source ID mix-up using its validated evidence URL.`);
+        evidence.source_id = observation.source_id;
+      }
       const source = sourceById.get(evidence.source_id);
-      if (!source) throw new Error(`Review ${review.finding_id} uses unapproved source ${evidence.source_id}.`);
-      if (!hostnameMatches(evidence.source_url, source.canonical_url)) throw new Error(`Review ${review.finding_id} uses a URL outside approved source ${evidence.source_id}.`);
-      if (evidence.underlying_source_id && !sourceById.has(evidence.underlying_source_id)) throw new Error(`Review ${review.finding_id} names unapproved underlying source ${evidence.underlying_source_id}.`);
-    }
-    return { ...review, schema_version: manifest.schema_version, methodology_version: 'adversarial-v1', run_id: runId,
-      finding_type: candidate.finding_type, title: candidate.title, original_statement: candidate.statement,
+      if (!source) issues.push(`Unapproved source ${evidence.source_id}.`);
+      else {
+        try {
+          if (!hostnameMatches(evidence.source_url, source.canonical_url)) issues.push(`URL is outside approved source ${evidence.source_id}.`);
+        } catch { issues.push(`Invalid evidence URL for source ${evidence.source_id}.`); }
+      }
+      if (evidence.underlying_source_id && !sourceById.has(evidence.underlying_source_id)) issues.push(`Unapproved underlying source ${evidence.underlying_source_id}.`);
+      return evidence;
+    });
+    const context = { schema_version: manifest.schema_version, methodology_version: 'adversarial-v1', run_id: runId,
+      finding_id: candidate.finding_id, finding_type: candidate.finding_type, title: candidate.title, original_statement: candidate.statement,
       observation_ids: candidate.observation_ids, event_ids: candidate.event_ids, metric_ids: candidate.metric_ids };
+    const parsed = issues.length ? null : challengedFindingSchemaV1.safeParse({ ...review, ...context, counter_evidence: counterEvidence });
+    if (parsed && !parsed.success) issues.push(...parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`));
+    if (issues.length) {
+      diagnostics.excluded_findings.push({ finding_id: candidate.finding_id, reasons: issues });
+      console.warn(`Finding ${candidate.finding_id} excluded from publication: ${issues.join(' ')}`);
+      // Do not publish a conclusion after discarding evidence or an incomplete review it might rely on.
+      return { ...context, status: 'insufficient_evidence', counter_evidence: [],
+        challenges_checked: ['Checked review completeness and source integrity.'],
+        final_statement: 'This finding is not publishable because its review could not be verified.',
+        decision_reason: `Review integrity warning: ${issues.join(' ')}` };
+    }
+    return parsed.data;
   }));
+  await fs.writeFile(diagnosticsFile, `${JSON.stringify(diagnostics, null, 2)}\n`);
   const validated = challenged.filter((item) => ['confirmed','qualified','resolved'].includes(item.status));
   const rejected = challenged.filter((item) => ['rejected','insufficient_evidence'].includes(item.status));
   await writeRunStage(runId, 'validated-findings', validated, root);

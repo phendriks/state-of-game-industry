@@ -37,10 +37,73 @@ try {
   await calculateDeterministicMetrics(runId, root);
   const candidates = await generateCandidateFindings(runId, fakeClient(candidatePayload), root);
   assert.equal(candidates.length, 10);
+  const evidence = { claim: 'This value is a forecast, not realized revenue.', source_id: observation.source_id,
+    source_url: observation.source_url, underlying_source_id: null, evidence_type: 'forecast', geography: 'Global',
+    reference_period_start: '2026-01-01', reference_period_end: '2026-12-31' };
+  const withEvidence = (change) => {
+    const payload = structuredClone(reviewPayload);
+    payload.reviews[0].counter_evidence = [{ ...evidence, ...change }];
+    return payload;
+  };
+  const directory = path.join(root, runId);
+  const diagnostics = async () => JSON.parse(await fs.readFile(path.join(directory, 'finding-review-diagnostics.json'), 'utf8'));
+  // Reproduce the dry-run bug: a validated observation ID was returned as source_id.
+  const mixedIds = withEvidence({ source_id: observation.observation_id });
+  const recovered = await challengeCandidateFindings(runId, { responses: { create: async (request) => {
+    const properties = request.text.format.schema.properties.reviews.items.properties;
+    assert.deepEqual(properties.finding_id.enum, candidates.map((candidate) => candidate.finding_id));
+    assert.ok(properties.counter_evidence.items.properties.source_id.enum.includes(observation.source_id));
+    assert.ok(!properties.counter_evidence.items.properties.source_id.enum.includes(observation.observation_id));
+    assert.ok(properties.counter_evidence.items.properties.underlying_source_id.enum.includes(null));
+    return { output_text: JSON.stringify(mixedIds) };
+  } } }, root);
+  assert.equal(recovered.validated.length, 8);
+  assert.equal(recovered.validated[0].counter_evidence[0].source_id, observation.source_id);
+  assert.equal((await diagnostics()).original_reviews[0].counter_evidence[0].source_id, observation.observation_id);
+  assert.equal((await diagnostics()).id_corrections.length, 1);
+
+  for (const change of [
+    { source_id: 'unknown-source' },
+    { source_url: 'https://unapproved.example/claim' },
+    { underlying_source_id: 'unknown-origin' },
+    { source_id: observation.observation_id, source_url: 'https://newzoo.com/different-article' },
+    { source_url: 'not-a-url' },
+    { reference_period_end: '2025-01-01' }
+  ]) {
+    const continued = await challengeCandidateFindings(runId, fakeClient(withEvidence(change)), root);
+    assert.equal(continued.validated.length, 7);
+    assert.equal(continued.rejected.length, 3);
+    const rejected = continued.rejected.find((review) => review.finding_id === 'candidate-1');
+    assert.equal(rejected.status, 'insufficient_evidence');
+    assert.deepEqual(rejected.counter_evidence, []);
+    assert.ok(!continued.validated.some((review) => review.finding_id === 'candidate-1'));
+    assert.equal((await diagnostics()).excluded_findings.length, 1);
+  }
+  for (const change of ['missing', 'duplicate', 'malformed']) {
+    const payload = structuredClone(reviewPayload);
+    if (change === 'missing') payload.reviews.shift();
+    if (change === 'duplicate') payload.reviews.push(structuredClone(payload.reviews[0]));
+    if (change === 'malformed') payload.reviews[0].counter_evidence = null;
+    payload.reviews.push({ ...reviewPayload.reviews[0], finding_id: 'not-a-candidate' });
+    const continued = await challengeCandidateFindings(runId, fakeClient(payload), root);
+    assert.equal(continued.validated.length, 7);
+    assert.equal(continued.rejected.length, 3);
+    assert.equal((await diagnostics()).warnings.length, 1);
+  }
+  const emptyReviews = await challengeCandidateFindings(runId, fakeClient({ reviews: [] }), root);
+  assert.equal(emptyReviews.validated.length, 0);
+  assert.equal(emptyReviews.rejected.length, candidates.length);
+  for (const text of ['not JSON', JSON.stringify({ reviews: null })]) {
+    const continued = await challengeCandidateFindings(runId, fakeTextClient(text), root);
+    assert.equal(continued.validated.length, 0);
+    assert.equal(continued.rejected.length, candidates.length);
+    assert.equal((await diagnostics()).warnings.length, 1);
+    assert.equal((await diagnostics()).original_output_text, text);
+  }
+
   const challenged = await challengeCandidateFindings(runId, fakeClient(reviewPayload), root);
   assert.equal(challenged.validated.length, 8);
   assert.equal(challenged.rejected.length, 2);
-  const directory = path.join(root, runId);
   assert.equal((JSON.parse(await fs.readFile(path.join(directory, 'rejected-findings.json'), 'utf8'))).length, 2);
   const selected = await selectFindings(runId, root);
   assert.equal(selected.length, 5);
