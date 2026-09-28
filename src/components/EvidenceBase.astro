@@ -3,9 +3,9 @@ import { NEWS_SOURCE_CATEGORIES } from '../data/newsSources';
 import { STATISTICAL_SOURCES } from '../data/statisticalSources';
 interface Props { open?: boolean }
 const { open = false } = Astro.props;
-const news=NEWS_SOURCE_CATEGORIES.flatMap(category=>category.sources.map(source=>({source,category:category.id})));
+const news=NEWS_SOURCE_CATEGORIES.flatMap(category=>category.sources.filter(source=>source.active!==false).map(source=>({source,category:category.id})));
 const eventNames=new Set(['Game Developer layoffs & closures','Xbox Wire']);
-const newsRows=(items:any[])=>items.map(({source}:any)=>({name:source.name,publisher:source.name,url:source.url,geography:source.geographic_focus??'Not specified',usedFor:source.coverage??'Monitored reporting',frequency:source.cadence??'Not set',type:source.type??'News / monitored source',limitation:source.notes??'Coverage and publication methods vary; each observation is checked against its stated scope.',registry:'Monitored source'}));
+const newsRows=(items:any[])=>items.map(({source}:any)=>({name:source.name,publisher:source.publisher??source.name,url:source.url,geography:source.geographic_focus??'Not specified',usedFor:source.coverage??'Monitored reporting',frequency:source.cadence??'Not set',type:source.type??'News / monitored source',limitation:source.notes??'Coverage and publication methods vary; each observation is checked against its stated scope.',registry:'Monitored source'}));
 const statsRows=(items:any[])=>items.map((source:any)=>({name:source.name,publisher:source.publisher,url:source.url,geography:source.geography,usedFor:source.role,frequency:source.frequency,type:`${source.sourceType} · ${source.gamesPrecision}`,limitation:source.limitations,registry:'Statistical / administrative'}));
 const groups=[
   {title:'Employment & hiring',description:'Vacancies, layoffs and professional workforce surveys.',items:newsRows(news.filter(({category,source})=>(category==='employment'&&!eventNames.has(source.name))||category==='professional'))},

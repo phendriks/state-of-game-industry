@@ -163,6 +163,8 @@ const reportSchema = z.object({
   report_type: z.enum(['monthly_snapshot', 'year_to_date_baseline']).default('monthly_snapshot'),
   title: z.string(),
   published: z.coerce.date(),
+  updated: z.coerce.date().optional(),
+  revision_summary: z.string().trim().min(1).optional(),
   period_start: z.coerce.date(),
   period_end: z.coerce.date(),
   ai_generated: z.boolean().default(true),

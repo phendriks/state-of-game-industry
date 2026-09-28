@@ -384,6 +384,21 @@ export const STATISTICAL_SOURCES: StatisticalSource[] = [
     active: true
   },
   {
+    id: 'ca-statcan-video-game-industry-profile',
+    name: 'Economic and Social Reports — video game industry profile',
+    publisher: 'Statistics Canada',
+    url: 'https://www150.statcan.gc.ca/n1/pub/36-28-0001/2025008/article/00001-eng.htm',
+    geography: 'Canada',
+    category: 'industry-workforce',
+    sourceType: 'official-statistics',
+    frequency: 'Periodic',
+    gamesPrecision: 'game-specific',
+    classificationSystem: 'NAICS 541515',
+    role: 'Enterprises, revenue, employment and provincial distribution in the Canadian video game industry.',
+    limitations: 'The published series currently ends in 2022 and the industry definition does not capture every games-related publishing activity.',
+    active: true
+  },
+  {
     id: 'intl-ilostat',
     name: 'ILOSTAT',
     publisher: 'International Labour Organization',

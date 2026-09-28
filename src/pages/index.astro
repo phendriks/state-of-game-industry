@@ -5,24 +5,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SnapshotOverview from '../components/SnapshotOverview.astro';
 import ReportDataTables from '../components/ReportDataTables.astro';
 import EvidenceBase from '../components/EvidenceBase.astro';
-const reports = (await getCollection('reports'))
-  .filter((report: CollectionEntry<'reports'>)=>report.data.report_type!=='year_to_date_baseline')
+const allReports = (await getCollection('reports'))
   .sort((a: CollectionEntry<'reports'>,b: CollectionEntry<'reports'>) => b.data.published.getTime() - a.data.published.getTime());
+const reports = allReports
+  .filter((report: CollectionEntry<'reports'>)=>report.data.report_type==='monthly_snapshot')
+const baseline = allReports.find((report: CollectionEntry<'reports'>)=>report.data.report_type==='year_to_date_baseline');
 const latest = reports[0];
 const { Content } = await render(latest);
-type SignalMetric={id:string;display_value:string;detail:string};
-const metricsById=new Map<string,SignalMetric>((latest.data.metrics as SignalMetric[]).map(metric=>[metric.id,metric]));
-const revenue=metricsById.get('global_games_revenue');
-const openRoles=metricsById.get('open_roles');
-const entryShare=metricsById.get('entry_level_role_share');
-const engineeringShare=metricsById.get('engineering_role_share');
-const layoffs=metricsById.get('confirmed_layoffs_2026')??metricsById.get('current_year_layoffs');
-const projectedLayoffs=metricsById.get('forecast_layoffs_2026')??metricsById.get('projected_layoffs');
-const signals=[
-  revenue&&`${revenue.display_value} global revenue forecast; ${revenue.detail}.`,
-  openRoles&&`${openRoles.display_value} tracked openings${entryShare&&engineeringShare?`, with ${entryShare.display_value} entry-level and ${engineeringShare.display_value} engineering`:''}.`,
-  layoffs&&`${layoffs.display_value} confirmed layoffs${projectedLayoffs?`; ${projectedLayoffs.display_value} projected for the full year`:''}.`
-].filter((signal):signal is string=>Boolean(signal));
+const latestObservationIds=new Set((latest.data.statistical_observations??[]).map(observation=>observation.id));
+const dashboardObservations=[
+  ...(latest.data.statistical_observations??[]),
+  ...(baseline?.data.statistical_observations??[]).filter(observation=>!latestObservationIds.has(observation.id))
+];
+const dashboardTalent=(latest.data.talent_pipeline||baseline?.data.talent_pipeline) ? {
+  ...(baseline?.data.talent_pipeline??{}),
+  ...(latest.data.talent_pipeline??{}),
+  workforce_flow:{
+    ...(baseline?.data.talent_pipeline?.workforce_flow??{}),
+    ...(latest.data.talent_pipeline?.workforce_flow??{})
+  }
+} : undefined;
+const dashboardReport={
+  ...latest,
+  data:{
+    ...latest.data,
+    statistical_observations:dashboardObservations,
+    talent_pipeline:dashboardTalent
+  }
+};
+type SignalMetric={id:string;label:string;display_value:string};
+const baselineMetrics=new Map<string,SignalMetric>(((baseline?.data.metrics??[]) as SignalMetric[]).map(metric=>[metric.id,metric]));
+const baselineSignals=(baseline?.data.baseline_findings??[]).map(finding=>({
+  title:finding.title,
+  evidence:finding.observation_ids
+    .map(metricId=>baselineMetrics.get(metricId))
+    .filter((metric):metric is SignalMetric=>Boolean(metric))
+    .map(metric=>`${metric.label}: ${metric.display_value}`)
+    .join('; ')
+}));
 ---
 <BaseLayout title="Game Industry Observatory">
   <section class="hero">
@@ -34,9 +54,17 @@ const signals=[
       <span>{latest.data.human_reviewed ? `Human reviewed by ${latest.data.reviewer}` : 'Not human reviewed'}</span>
     </div>
   </section>
-  <SnapshotOverview report={latest} />
+  <SnapshotOverview report={dashboardReport} />
   <section class="panel signal-board">
-    <p class="eyebrow">Signal board</p><h2>Key findings</h2><ul>{signals.map(signal=><li>{signal}</li>)}</ul>
+    <p class="eyebrow">Twelve-month baseline</p>
+    <h2>What the broader evidence shows</h2>
+    {baseline
+      ? <>
+          <p>{baseline.data.summary}</p>
+          <ul>{baselineSignals.map(signal=><li><strong>{signal.title}</strong>{signal.evidence&&<span> — {signal.evidence}</span>}</li>)}</ul>
+          <p><a href={`${import.meta.env.BASE_URL}reports/${baseline.id}/`}>Read Report Zero</a></p>
+        </>
+      : <p>No twelve-month baseline is available yet.</p>}
   </section>
   <details class="full-report evidence-disclosure">
     <summary><span><strong>View evidence base</strong><small>Browse monitored, statistical and administrative sources by category</small></span><span aria-hidden="true">Open sources</span></summary>

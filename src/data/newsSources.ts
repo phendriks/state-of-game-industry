@@ -1,5 +1,6 @@
 export type NewsSource = {
   name: string;
+  publisher?: string;
   url: string;
   coverage?: string;
   cadence?: 'Continuous' | 'Quarterly' | 'Annual' | 'Periodic';
@@ -7,6 +8,7 @@ export type NewsSource = {
   language?: string;
   geographic_focus?: string;
   notes?: string;
+  active?: boolean;
 };
 
 export type SourceCategory = {
@@ -112,11 +114,15 @@ export const NEWS_SOURCE_CATEGORIES: SourceCategory[] = [
       { name: 'Niko Partners market reports', url: 'https://nikopartners.com/reports/', coverage: 'Games markets and player research across Asia and MENA', cadence: 'Periodic', type: 'Market estimate', language: 'English with local-language research inputs', geographic_focus: 'Asia and MENA', notes: 'Research combines local-language tracking, surveys and market modeling.' },
       { name: 'Video Games Europe & EGDF Key Facts', url: 'https://www.videogameseurope.eu/data-key-facts/', coverage: 'European players, revenue, employment and company statistics', cadence: 'Annual', type: 'Trade body', language: 'English', geographic_focus: 'Europe' },
       { name: 'InvestGame reports', url: 'https://investgame.net/news/category/report/', coverage: 'Games investment, funding, M&A and public-market activity', cadence: 'Quarterly', type: 'Tracker / database', language: 'English', geographic_focus: 'Global', notes: 'Some market updates are produced with Aream & Co.; preserve the named origin for each observation.' },
-      { name: 'ESA Essential Facts', url: 'https://www.theesa.com/resources/essential-facts-about-the-us-video-game-industry/2026-data/', coverage: 'US player population, behaviour, demographics and spending', cadence: 'Annual', type: 'Trade body', language: 'English', geographic_focus: 'United States', notes: 'Trade-body publication based on commissioned consumer research; record the research partner as origin where relevant.' }
+      { name: 'ESA Essential Facts', url: 'https://www.theesa.com/resources/essential-facts-about-the-us-video-game-industry/2026-data/', coverage: 'US player population, behaviour, demographics and spending', cadence: 'Annual', type: 'Trade body', language: 'English', geographic_focus: 'United States', notes: 'Trade-body publication based on commissioned consumer research; record the research partner as origin where relevant.' },
+      { name: 'CESA Games Industry Report', publisher: 'Computer Entertainment Supplier\'s Association', url: 'https://www.cesa.or.jp/action/industry-research/', coverage: 'Japanese market structure, users, platforms and game-industry conditions', cadence: 'Annual', type: 'Trade body', language: 'Japanese', geographic_focus: 'Japan', notes: 'The complete annual report is paid; public releases expose selected findings. Preserve edition and survey definitions.', active: true },
+      { name: 'IGEA Australian Game Developer Survey', publisher: 'Interactive Games & Entertainment Association', url: 'https://igea.net/2026/03/agds-2025/', coverage: 'Australian game-development revenue, employment, studio composition and outlook', cadence: 'Annual', type: 'Trade body', language: 'English', geographic_focus: 'Australia', notes: 'Voluntary studio survey; retain the responding-studio count and financial-year scope with every observation.', active: true },
+      { name: 'ESAC Economic Impact Study', publisher: 'Entertainment Software Association of Canada', url: 'https://theesa.ca/', coverage: 'Canadian studios, employment, compensation and economic contribution', cadence: 'Periodic', type: 'Trade body', language: 'English and French', geographic_focus: 'Canada', notes: 'Commissioned sector study combining survey and secondary evidence; preserve the study year and coverage definition.', active: true },
+      { name: 'China Game Industry Report', publisher: 'China Audio-Video and Digital Publishing Association Game Publishing Committee', url: 'https://www.oga.org.cn/newsinfo/9170782.html', coverage: 'Chinese games revenue, users, products and overseas performance', cadence: 'Periodic', type: 'Trade body', language: 'Chinese', geographic_focus: 'China', notes: 'Local-language association publication; retain the reporting period, currency basis and publisher attribution.', active: true }
     ]
   }
 ];
 
 export const NEWS_SOURCES = NEWS_SOURCE_CATEGORIES.flatMap((category) =>
-  category.sources.map((source) => ({ ...source, category: category.id }))
+  category.sources.filter((source) => source.active !== false).map((source) => ({ ...source, category: category.id }))
 );

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { DASHBOARD_DATA_TODOS } from '../data/dashboardMetrics';
 ---
 <BaseLayout title="Methodology · Game Industry Observatory">
   <section class="hero compact">
@@ -18,10 +19,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p>The public report presents the information in the opposite order: a short interpretation first, then the observations, then their sources and any known source relationships.</p>
 
     <h2>Dashboard indicator schema</h2>
-    <p>The overview uses three stable groups: worldwide players and market, the tracked DevQuest job dataset, and talent pipeline and workforce flow. Each available slot references a stored observation, so its scope, date, type and source remain visible.</p>
+    <p>The overview uses three stable groups: worldwide players and market, employment conditions, and talent pipeline and workforce flow. Employment combines the separately labelled DevQuest vacancy dataset and ASGC layoff tracker; neither is presented as a global workforce census. Each available slot references a stored observation, so its scope, date, type and source remain visible.</p>
     <p>Talent slots cover game-specific graduates, workers entering games, workers leaving games and a future graduate-to-entry-opportunity ratio. Missing indicators remain visible as unavailable. Broader sector proxies, layoffs and intent-to-leave surveys cannot fill these slots.</p>
     <p>When no compatible figure is published during the current collection window, the latest compatible observation may be carried forward with its original observation date. The graduate-to-entry-opportunity ratio requires matching trailing-12-month flows on both sides; it never compares annual graduates with today’s open jobs.</p>
     <p>A result from one company, developer, publisher or game cannot fill an overview slot. Those observations remain available in the detailed tables.</p>
+
+    <h3>Open measurement work</h3>
+    <p>Some useful indicators remain explicit research tasks after the twelve-month baseline found no defensible game-specific observation. They stay unavailable until the required evidence exists.</p>
+    <ul>
+      {DASHBOARD_DATA_TODOS.map((item)=><li><strong>{item.label}:</strong> {item.evidenceNeeded} {item.nextStep}</li>)}
+    </ul>
 
     <h2>Data types</h2>
     <ul>

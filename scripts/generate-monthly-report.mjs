@@ -193,7 +193,7 @@ const monthlyReportSchema = {
 
 const newsSources = NEWS_SOURCE_CATEGORIES.map((group) => ({
   category: group.name,
-  sources: group.sources.map((source) => ({
+  sources: group.sources.filter((source) => source.active !== false).map((source) => ({
     name: source.name,
     canonical_url: source.url,
     coverage: source.coverage,
@@ -253,7 +253,7 @@ ${JSON.stringify(statisticalSources)}`
 
 const collected = [];
 for (const metric of generated.observations) {
-  const source = NEWS_SOURCE_CATEGORIES.flatMap((group) => group.sources).find((candidate) => candidate.name === metric.source);
+  const source = NEWS_SOURCE_CATEGORIES.flatMap((group) => group.sources.filter((candidate) => candidate.active !== false)).find((candidate) => candidate.name === metric.source);
   if (!source) continue;
   if (metric.published_on < window.periodStart || metric.published_on > window.periodEnd) continue;
   if (!hostnameMatches(metric.source_url, source.url)) continue;
