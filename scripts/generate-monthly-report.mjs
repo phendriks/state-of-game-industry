@@ -2,11 +2,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { resolveReportDate } from './report-lib.mjs';
 import { generateMonthlyRun } from './monthly-pipeline.mjs';
+import { readArgument } from './script-input.mjs';
 
-const argument = (name) => process.argv.find((value) => value.startsWith(`--${name}=`))?.slice(name.length + 3);
-const reportDate = resolveReportDate(argument('report-date') ?? process.env.REPORT_DATE);
+const reportDate = resolveReportDate(readArgument('report-date') ?? process.env.REPORT_DATE);
 console.log(`Selected monthly publication date: ${reportDate}.`);
-const runId = argument('run-id') ?? `report-${reportDate}-${Date.now()}`;
+const runId = readArgument('run-id') ?? `report-${reportDate}-${Date.now()}`;
 const evidenceRoot = path.resolve('data/evidence');
 const previous = (await fs.readdir(evidenceRoot).catch(() => []))
   .filter((name) => /^report-\d{4}-\d{2}-\d{2}$/.test(name) && name.slice(7) < reportDate)

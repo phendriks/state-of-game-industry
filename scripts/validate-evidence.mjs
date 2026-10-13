@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { evidenceSchemasV1 } from '../src/data/evidence/schema-v1.ts';
+import { readArgument } from './script-input.mjs';
 
-const argument = (name) => process.argv.find((value) => value.startsWith(`--${name}=`))?.slice(name.length + 3);
-const type = argument('type');
-const file = argument('file');
+const type = readArgument('type');
+const file = readArgument('file');
 
 if (!type || !(type in evidenceSchemasV1) || !file) {
   throw new Error('Usage: npm run evidence:validate -- --type=observations|sources|events|findings|reports --file=<json-or-jsonl>');

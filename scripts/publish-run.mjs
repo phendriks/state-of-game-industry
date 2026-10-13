@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { completeRun, readRunManifest, RUNS_DIR, RUN_STAGE_FILES } from './run-workspace.mjs';
 import { validateCompleteRun } from './final-pipeline.mjs';
+import { readArgument } from './script-input.mjs';
 
 const buildSite = () => {
   const build = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'build'], { stdio: 'inherit', shell: process.platform === 'win32' });
@@ -58,8 +59,7 @@ export async function publishRun(runId, { root = RUNS_DIR, reportsRoot = path.re
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  const argument = (name) => process.argv.find((value) => value.startsWith(`--${name}=`))?.slice(name.length + 3);
-  const runId = argument('run-id');
+  const runId = readArgument('run-id');
   if (!runId) throw new Error('Use --run-id=<id> [--commit=true].');
-  await publishRun(runId, { commit: argument('commit') === 'true' });
+  await publishRun(runId, { commit: readArgument('commit') === 'true' });
 }
