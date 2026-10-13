@@ -38,29 +38,28 @@ const baselineSignals=(baseline?.data.baseline_findings??[]).map(finding=>({
   <SnapshotOverview report={dashboardReport} />
   <section class="panel signal-board">
     <p class="eyebrow">Twelve-month baseline</p>
-    <h2>What the broader evidence shows</h2>
+    <h2>Key signals</h2>
     {baseline
       ? <>
-          <p>{baseline.data.summary}</p>
           <ul>{baselineSignals.map(signal=><li><strong>{signal.title}</strong>{signal.evidence&&<span> — {signal.evidence}</span>}</li>)}</ul>
           <p><a href={`${import.meta.env.BASE_URL}reports/${baseline.id}/`}>Read Report Zero</a></p>
         </>
       : <p>No twelve-month baseline is available yet.</p>}
   </section>
   <details class="full-report evidence-disclosure">
-    <summary><span><strong>View evidence base</strong><small>Browse monitored, statistical and administrative sources by category</small></span><span aria-hidden="true">Open sources</span></summary>
+    <summary><span><strong>Sources</strong><small>Browse by category</small></span><span aria-hidden="true">Open sources</span></summary>
     <div class="report evidence-report"><EvidenceBase /></div>
   </details>
   <details class="full-report">
     <summary>
-      <span><strong>Read the full report</strong><small>Employment, market, company and source tables</small></span>
+      <span><strong>Report & data</strong><small>Key updates and supporting figures</small></span>
       <span aria-hidden="true">Open report</span>
     </summary>
     <article class="report prose"><Content /><ReportDataTables report={latest} /></article>
   </details>
   <section class="quick-links">
-    <a class="card" href={`${import.meta.env.BASE_URL}history/`}><strong>Data</strong><span>Track source-level figures across reporting periods.</span></a>
-    <a class="card" href={`${import.meta.env.BASE_URL}methodology/`}><strong>Methodology</strong><span>Understand scope, limitations and AI provenance.</span></a>
-    <a class="card" href={`${import.meta.env.BASE_URL}sources/`}><strong>Sources & contributions</strong><span>Inspect the source registry or propose one we should track.</span></a>
+    <a class="card" href={`${import.meta.env.BASE_URL}history/`}><strong>Data</strong><span>Compare reports.</span></a>
+    <a class="card" href={`${import.meta.env.BASE_URL}methodology/`}><strong>Methodology</strong><span>Definitions and limits.</span></a>
+    <a class="card" href={`${import.meta.env.BASE_URL}sources/`}><strong>Sources & contributions</strong><span>Browse or suggest sources.</span></a>
   </section>
 </BaseLayout>

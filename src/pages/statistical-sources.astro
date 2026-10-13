@@ -37,7 +37,7 @@ for (const source of STATISTICAL_SOURCES.filter((candidate) => candidate.active)
   <section class="hero compact">
     <p class="eyebrow">Talent pipeline &amp; workforce flow</p>
     <h1>Statistical source registry</h1>
-    <p class="lede">Official and sector datasets that can measure who enters game-development education, what happens after graduation, and how workers move. Inclusion identifies a possible observation base; it does not make unlike datasets interchangeable.</p>
+    <p class="lede">Education and workforce datasets, with coverage limits for each source.</p>
   </section>
 
   <section class="data-key" aria-label="Registry principles">
@@ -48,12 +48,12 @@ for (const source of STATISTICAL_SOURCES.filter((candidate) => candidate.active)
   </section>
 
   <section class="panel prose statistical-intro">
-    <h2>What this will eventually show</h2>
-    <p>The monthly workflow checks these sources for programme entrants, graduates, workforce contraction, industry inflow and industry outflow. The dashboard uses verified graduates, workers entering games and workers leaving games, and publishes a value only when collection can preserve the official source release, classification and transformation.</p>
+    <h2>Education and career evidence</h2>
+    <p>Completion counts and career surveys retain their population and year. They cannot establish global worker entry, exits or surplus headcounts.</p>
     <ul>
       {FUTURE_TALENT_METRICS.map((metric) => <li><strong>{metric.label}:</strong> {metric.definition}</li>)}
     </ul>
-    <p>A future graduate-to-entry-opportunity ratio will compare trailing-12-month flows on both sides. It will not be described as a chance of employment, placement probability or competition per job.</p>
+    <p>A graduate-to-opportunity ratio needs matching annual flows and geography; it is not a placement probability.</p>
   </section>
 
   <div class="source-list statistical-registry">
@@ -74,7 +74,7 @@ for (const source of STATISTICAL_SOURCES.filter((candidate) => candidate.active)
                   <td><span class={`precision precision--${source.gamesPrecision}`}>{precisionLabels[source.gamesPrecision]}</span></td>
                   <td>{source.frequency}</td>
                   <td>{source.role}</td>
-                  <td>{source.limitations}</td>
+                  <td><details class="source-context"><summary>Coverage notes</summary>{source.limitations}</details></td>
                 </tr>
               ))}
             </tbody>

@@ -86,3 +86,13 @@ export function hostnameMatches(candidate, registered) {
     || candidateHost.endsWith(`.${registeredHost}`)
     || registeredHost.endsWith(`.${candidateHost}`);
 }
+
+// A reviewed mirror grants access to that document, not the host's entire catalogue.
+export function sourceUrlMatches(candidate, { canonical_url, evidence_urls = [] }) {
+  if (hostnameMatches(candidate, canonical_url)) return true;
+  const url = new URL(candidate);
+  return evidence_urls.some(allowed => {
+    const mirror = new URL(allowed);
+    return url.origin === mirror.origin && url.pathname === mirror.pathname && url.search === mirror.search;
+  });
+}

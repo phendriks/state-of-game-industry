@@ -25,8 +25,9 @@ export function activeRegistrySources() {
   const statistical = STATISTICAL_SOURCES.filter((source) => source.active).map((source) => ({
     source_id: `stat-${source.id}`, name: source.name, publisher: source.publisher, canonical_url: source.url,
     registry: 'statistical', category: source.category, geography: source.geography,
+    ...(source.evidenceUrls ? { evidence_urls: source.evidenceUrls } : {}),
     eligible_evidence_classes: ['context', 'historical_baseline'], active: true
-    ,quality: { primary_secondary: 'primary', official: true, independent: true, methodology_published: true, reference_period_clear: true, geography_clear: true, reproducible_query: Boolean(source.classificationSystem), measurement_kind: source.sourceType.includes('survey') ? 'survey' : 'reported' }
+    ,quality: { primary_secondary: 'primary', official: source.sourceType !== 'sector-survey', independent: source.sourceType === 'sector-survey' ? null : true, methodology_published: true, reference_period_clear: true, geography_clear: true, reproducible_query: Boolean(source.classificationSystem), measurement_kind: source.sourceType.includes('survey') ? 'survey' : 'reported' }
   }));
   return [...news, ...statistical];
 }

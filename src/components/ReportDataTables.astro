@@ -2,11 +2,14 @@
 import { NEWS_SOURCES } from '../data/newsSources';
 import { REPORT_METRIC_CATEGORIES } from '../data/reportMetrics';
 import type { ReportMetric } from '../data/reportMetrics';
+import type { CollectionEntry } from 'astro:content';
+import { STATISTICAL_SOURCES } from '../data/statisticalSources';
 
-interface Props { report: { data: { metrics: ReportMetric[] } } }
+interface Props { report: { data: { metrics: ReportMetric[]; statistical_observations?: CollectionEntry<'reports'>['data']['statistical_observations'] } } }
 
 const { report } = Astro.props;
 const sourceRecords = new Map(NEWS_SOURCES.map((source) => [source.name, source]));
+const statisticalSources = new Map(STATISTICAL_SOURCES.map(source => [source.id, source.name]));
 const groups = REPORT_METRIC_CATEGORIES
   .map((category) => ({ category, metrics: report.data.metrics.filter((metric) => metric.category === category) }))
   .filter((group) => group.metrics.length > 0);
@@ -15,7 +18,7 @@ const groups = REPORT_METRIC_CATEGORIES
   <div class="report-data-heading">
     <p class="eyebrow">Source-backed observations</p>
     <h2 id="report-data-title">Data</h2>
-    <p>Figures retain their original scope and observation date. Company measures are presented individually and are not a ranking.</p>
+    <p>Original scope and dates retained. Company figures are not a ranking.</p>
   </div>
 
   {groups.map(({ category, metrics }) => (
@@ -29,12 +32,12 @@ const groups = REPORT_METRIC_CATEGORIES
               <tr>
                 <td><strong>{metric.label}</strong></td>
                 <td class="report-data-value"><strong>{metric.display_value}</strong></td>
-                <td>{metric.scope}<small>{metric.detail}</small>{metric.calculation && <small>Calculation: {metric.calculation}</small>}{metric.inputs && <small>Inputs: {metric.inputs.map((input) => `${input.label} ${input.display_value}`).join('; ')}</small>}</td>
+                <td>{metric.scope}<small>{metric.detail}</small></td>
                 <td><span class={`data-kind data-kind--${metric.kind.toLowerCase()}`}>{metric.kind}</span></td>
                 <td>{metric.observed_on.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                 <td>
                   <a href={metric.source_url ?? sourceRecords.get(metric.source)?.url}>{metric.source}</a>
-                  {(metric.origin || metric.source_relationship || metric.published_on || metric.collected_on || metric.evidence_excerpt || metric.carried_forward || sourceRecords.get(metric.source)?.language) && (
+                  {(metric.origin || metric.source_relationship || metric.published_on || metric.collected_on || metric.evidence_excerpt || metric.carried_forward || metric.calculation || metric.inputs || sourceRecords.get(metric.source)?.language) && (
                     <details class="source-context">
                       <summary>Context</summary>
                       {metric.origin && <small>Origin: {metric.origin}</small>}
@@ -43,7 +46,9 @@ const groups = REPORT_METRIC_CATEGORIES
                       {metric.published_on && <small>Published: {metric.published_on.toLocaleDateString('en-GB')}</small>}
                       {metric.collected_on && <small>Collected: {metric.collected_on.toLocaleDateString('en-GB')}</small>}
                       {metric.evidence_excerpt && <small>Evidence: {metric.evidence_excerpt}</small>}
-                      {metric.carried_forward && <small>Carried forward; observation date unchanged.</small>}
+                      {metric.calculation && <small>Calculation: {metric.calculation}</small>}
+                      {metric.inputs && <small>Inputs: {metric.inputs.map((input) => `${input.label} ${input.display_value}`).join('; ')}</small>}
+                      {metric.carried_forward && <small>Carried forward; original date.</small>}
                     </details>
                   )}
                 </td>
@@ -54,4 +59,34 @@ const groups = REPORT_METRIC_CATEGORIES
       </div>
     </section>
   ))}
+  {(report.data.statistical_observations?.length ?? 0) > 0 && (
+    <section class="report-data-group" aria-labelledby="report-data-careers">
+      <h3 id="report-data-careers">Education & career outcomes</h3>
+      <div class="report-data-table-wrap">
+        <table class="report-data-table">
+          <thead><tr><th>Measure</th><th>Value</th><th>Scope and context</th><th>Type</th><th>Reference period</th><th>Source</th></tr></thead>
+          <tbody>{report.data.statistical_observations?.map(item => (
+            <tr>
+              <td><strong>{item.label}</strong></td>
+              <td class="report-data-value"><strong>{item.display_value}</strong></td>
+              <td>{item.geography}<small>{item.detail}</small></td>
+              <td>{item.measurement_type ?? (item.transformation ? 'Derived' : 'Reported')}</td>
+              <td>{item.reference_period}</td>
+              <td><a href={item.source_url}>{statisticalSources.get(item.source_id) ?? item.publisher}</a>
+                <details class="source-context"><summary>Context</summary>
+                  <small>Published: {item.release_date?.toLocaleDateString('en-GB') ?? 'Not recorded'}</small>
+                  <small>Collected: {item.retrieved_at.toLocaleDateString('en-GB')}</small>
+                  {item.carried_forward && <small>Carried forward; original period.</small>}
+                  <small>Coverage: {item.coverage_notes}</small>
+                  {item.transformation && <small>Calculation: {item.transformation}</small>}
+                  {item.inputs && <small>Programme rates: {item.inputs.map(input => `${input.label}: ${input.value}%`).join('; ')}</small>}
+                  <small>Evidence: {item.evidence_excerpt}</small>
+                </details>
+              </td>
+            </tr>
+          ))}</tbody>
+        </table>
+      </div>
+    </section>
+  )}
 </section>

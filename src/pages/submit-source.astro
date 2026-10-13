@@ -7,7 +7,7 @@ const registryEditUrl = 'https://github.com/phendriks/state-of-game-industry/edi
   <section class="hero compact">
     <p class="eyebrow">Improve the evidence base</p>
     <h1>Propose a source</h1>
-    <p class="lede">Suggest a feed, tracker, dataset or publication by proposing an edit to the public source registry. GitHub records your contribution and the repository owner reviews it before anything changes.</p>
+    <p class="lede">Suggest a source through GitHub. The owner reviews each proposal.</p>
   </section>
 
   <div class="form-layout contribution-layout">
@@ -15,13 +15,13 @@ const registryEditUrl = 'https://github.com/phendriks/state-of-game-industry/edi
       <p class="eyebrow">GitHub contribution</p>
       <h2>Edit the source registry</h2>
       <ol>
-        <li>Sign in to GitHub and open the registry using the button below.</li>
-        <li>Find the best category and add one source entry using the existing format.</li>
-        <li>Select <strong>Propose changes</strong>, briefly explain why the source belongs, and open the pull request.</li>
-        <li>The repository owner reviews, discusses and either merges or declines the proposal.</li>
+        <li>Sign in to GitHub and open the registry.</li>
+        <li>Add your source under the best category.</li>
+        <li>Select <strong>Propose changes</strong> and explain its value.</li>
+        <li>Open a pull request for review.</li>
       </ol>
       <a class="button" href={registryEditUrl}>Edit the registry on GitHub</a>
-      <p class="form-note">For contributors without write access, GitHub creates a fork automatically. Your proposal cannot alter the live site until it is reviewed and merged.</p>
+      <p class="form-note">GitHub creates a fork if needed. Only merged changes reach the site.</p>
     </section>
 
     <aside class="panel review-note">
@@ -33,8 +33,8 @@ const registryEditUrl = 'https://github.com/phendriks/state-of-game-industry/edi
   type: 'Research / survey',
   notes: 'Optional useful context'
 }`}</code></pre>
-      <p>A name, canonical URL and simple type are enough for a proposal. Notes are optional. The owner can add coverage, cadence, language or regional details during review.</p>
-      <p>In the pull-request description, disclose any relationship you have with the source. Affiliation does not automatically make a source better or worse.</p>
+      <p>Include a name, URL and type. Notes are optional.</p>
+      <p>Disclose any affiliation in the pull request.</p>
     </aside>
   </div>
 </BaseLayout>

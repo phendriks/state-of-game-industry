@@ -9,7 +9,7 @@ human_reviewed: false
 geographic_scope: Global where explicitly stated, supplemented by separately labelled United States and company-level observations
 global_representativeness: limited
 independently_audited: false
-summary: A twelve-month baseline covering employment, education, capital, company results and commercially visible releases. Post-cutoff publications are retained only when they report an in-window reference period and are explicitly labelled as reporting-lag evidence.
+summary: Games spending and investment remained substantial while layoffs and difficult career outcomes persisted. This baseline covers 24 August 2025–23 August 2026.
 baseline_findings:
   - id: workforce_disruption_remained_widespread
     title: Workforce disruption remained widespread
@@ -385,11 +385,12 @@ research_limitations:
   - Circana's July tables were published after the 23 August cutoff; they are retained only as reporting-lag evidence about an in-window month.
   - The anticipated-games set is a post-cutoff monitoring capture, not a reconstructed 23 August ranking, and is excluded from baseline findings.
   - Layoff trackers provide documented event totals rather than an official global workforce census.
+  - The European 2025 market total was published after the baseline cutoff; it is dashboard context and is excluded from baseline findings. Career surveys retain their own years and response populations.
 statistical_observations:
   - id: us_game_specific_awards_2024
     label: US game-specific postsecondary awards
     display_value: 3,455
-    detail: 2,964 Game and Interactive Media Design awards plus 491 Computer Game Programming awards
+    detail: 2,964 design awards; 491 programming awards. Credentials, not unique people.
     source_id: us-nces-ipeds
     publisher: US National Center for Education Statistics
     dataset_name: IPEDS Completions 2024
@@ -404,7 +405,7 @@ statistical_observations:
     classification_system: Classification of Instructional Programs
     classification_version: CIP 2020
     classification_code: 11.0204 + 50.0411
-    measure: Annual first-major awards across all award levels
+    measure: annual_game_specific_graduates
     original_unit: awards
     original_value: 3455
     query_or_filters: MAJORNUM=1; CIPCODE in 11.0204 or 50.0411; sum CTOTALT across institutions and award levels
@@ -413,11 +414,183 @@ statistical_observations:
     precision_class: game-specific
     coverage_notes: Covers participating US postsecondary institutions; counts credentials, not unique graduates, starts, employment entries or people entering games work.
     evidence_excerpt: "CIP 50.0411: 2,964 awards; CIP 11.0204: 491 awards."
+  - retrieved_at: 2026-10-13
+    revision_status: final
+    methodology_version: talent-v2
+    carried_forward: true
+    id: princeton_undergraduate_entry_2025
+    label: "Graduate entry by graduation: programme median"
+    display_value: 36%
+    detail: Unweighted median of 43 selected undergraduate programmes; not a global student placement rate.
+    source_id: princeton-game-design-outcomes
+    publisher: The Princeton Review
+    dataset_name: "Top Game Design Schools 2026: undergraduate graduate outcomes"
+    source_url: https://sftp01.princetonreview.com/public/file/in5wpnxk_ugwqac6xeuela/pc-gamer-article-2026.pdf
+    geography: Selected US and international programmes
+    reference_period: Class of 2025; published March 2026
+    observed_on: 2025-12-31
+    release_date: 2026-03-24
+    period_start: 2025-01-01
+    period_end: 2025-12-31
+    measure: graduate_entry_by_graduation
+    original_unit: percent; unweighted programme median
+    original_value: 36
+    derived_value: 36
+    measurement_type: Derived
+    inputs:
+      - label: New York University
+        value: 53
+      - label: University of Southern California
+        value: 63
+      - label: University of Central Florida
+        value: 36
+      - label: Rochester Institute of Technology
+        value: 88
+      - label: Abertay University
+        value: 44
+      - label: DigiPen Institute of Technology
+        value: 62
+      - label: Clark University
+        value: 68
+      - label: University of Utah
+        value: 36
+      - label: Savannah College of Art and Design
+        value: 34
+      - label: Michigan State University
+        value: 53
+      - label: Champlain College
+        value: 78
+      - label: Drexel University
+        value: 43
+      - label: Worcester Polytechnic Institute
+        value: 50
+      - label: Northeastern University
+        value: 20
+      - label: Purdue University
+        value: 68
+      - label: Falmouth University
+        value: 56
+      - label: Shawnee State University
+        value: 25
+      - label: University of Florida
+        value: 33
+      - label: Full Sail University
+        value: 10
+      - label: Vancouver Film School
+        value: 11
+      - label: Quinnipiac University
+        value: 60
+      - label: New England Institute of Technology
+        value: 24
+      - label: Bradley University
+        value: 15
+      - label: Miami University
+        value: 56
+      - label: DePaul University
+        value: 77
+      - label: Howest University of Applied Sciences
+        value: 54
+      - label: Rensselaer Polytechnic Institute
+        value: 8
+      - label: University of California, Santa Barbara
+        value: 33
+      - label: Abilene Christian University
+        value: 63
+      - label: Kent State University
+        value: 34
+      - label: University of California, Irvine
+        value: 25
+      - label: LaSalle College Vancouver
+        value: 44
+      - label: University of Miami
+        value: 32
+      - label: Northern Arizona University
+        value: 50
+      - label: University of Michigan-Dearborn
+        value: 20
+      - label: University of Wisconsin-Stout
+        value: 10
+      - label: Stetson University
+        value: 100
+      - label: Oklahoma Christian University
+        value: 25
+      - label: Bloomfield College of Montclair State University
+        value: 7
+      - label: Indiana University Bloomington
+        value: 20
+      - label: ArtCenter College of Design
+        value: 25
+      - label: Louisiana State University
+        value: 4
+      - label: Oklahoma City University
+        value: 10
+    query_or_filters: Top 50 undergraduate entries only; 43 numeric 2025 Grads Hired rates; exclude 7 NR entries and all postgraduate programmes.
+    transformation: Sort the 43 institution-reported percentages; select the 22nd value (36%). Each programme has equal weight.
+    precision_class: game-specific
+    coverage_notes: "Institution-reported games jobs at or before graduation. Selected rankings, not a representative graduate cohort; school sizes unavailable. Seven NR entries excluded. Question definition: https://www.princetonreview.com/college-rankings/game-design/methodology"
+    evidence_excerpt: Institution-reported 2025 graduate employment percentages; median computed from the 43 stored undergraduate programme rates.
+  - retrieved_at: 2026-10-13
+    revision_status: final
+    methodology_version: talent-v2
+    carried_forward: true
+    id: europe_career_switching_2025
+    label: Changed field or industry after career changes
+    display_value: 13.1%
+    detail: Career-change responses; question count undisclosed. Field changes may stay within games.
+    source_id: ingamejob-valuesvalue-employment
+    publisher: InGame Job and Values Value
+    dataset_name: Big Games Industry Employment Survey 2025
+    table_id: "page 47: changes in salary and position"
+    source_url: https://investgame.net/wp-content/uploads/2025/11/Big_Games_Industry_Employment_Survey_2025.pdf#page=47
+    geography: Europe; career-change respondents
+    reference_period: March-June 2025 survey; prior-year career changes
+    observed_on: 2025-06-30
+    release_date: 2025-12-09
+    measure: career_switching_share
+    original_unit: percent of career-change responses; base count undisclosed
+    original_value: 13.1
+    measurement_type: Survey
+    precision_class: identified-games-workforce
+    coverage_notes: Report analyses Europe only despite 1,650 responses from 85 countries. Field/industry change is a combined response option; question base count is undisclosed. Do not generalize to all workers, 2026 layoffs or measured industry outflow.
+    evidence_excerpt: "Changed field/industry: 13.1%."
+  - retrieved_at: 2026-10-13
+    revision_status: final
+    methodology_version: talent-v2
+    carried_forward: true
+    id: gdc_post_layoff_joblessness_2026
+    label: Laid-off respondents without another job
+    display_value: 48%
+    detail: Among respondents laid off in the preceding two years; not a current workforce surplus.
+    source_id: gdc-career-outcomes
+    publisher: GDC
+    dataset_name: GDC 2026 State of the Game Industry
+    table_id: "page 13: industry layoffs"
+    source_url: https://investgame.net/wp-content/uploads/2026/01/2026-01-29-dec052f4_d88e_48ce_9f83_a18ce2f2a6e5_541400_GDC26_PDF_SOTI_Report.pdf#page=13
+    geography: International; laid-off GDC respondents
+    reference_period: 2026 survey edition; layoffs in preceding 24 months
+    observed_on: 2026-01-28
+    release_date: 2026-01-28
+    measure: post_layoff_joblessness_share
+    original_unit: percent of laid-off respondents
+    original_value: 48
+    measurement_type: Survey
+    precision_class: identified-games-workforce
+    coverage_notes: Self-selected survey cohort, not all games workers or all people laid off in 2026. Not finding another job does not prove active job search or current availability. GDC changed its survey methodology in 2026.
+    evidence_excerpt: Of those who experienced a layoff, 48% had not found another job yet.
 talent_pipeline:
   graduate_supply:
     observation_ids:
       - us_game_specific_awards_2024
     note: Latest official game-specific completion baseline released inside the report window; not a global total or industry-inflow count.
+  graduate_entry:
+    observation_ids:
+      - princeton_undergraduate_entry_2025
+  career_switching:
+    observation_ids:
+      - europe_career_switching_2025
+  post_layoff_joblessness:
+    observation_ids:
+      - gdc_post_layoff_joblessness_2026
 metrics:
   - id: global_games_revenue
     label: Global games revenue
@@ -643,11 +816,11 @@ metrics:
     label: Respondents whose employer conducted layoffs
     value: 50
     display_value: 50%
-    detail: Current or most recent employer in the prior 12 months
+    detail: Respondents reporting employer layoffs in the prior year; not a percentage of companies.
     scope: GDC State of the Game Industry survey respondents
     unit: percent
     category: Employment
-    kind: Reported
+    kind: Survey
     observed_on: 2026-01-28
     published_on: 2026-01-28
     collected_on: 2026-09-27
@@ -825,33 +998,66 @@ metrics:
     source_relationship: First-party
     evidence_excerpt: "Electronic Arts net bookings change: +9.0%. FY26 year-over-year change"
     origin: Electronic Arts Investor Relations
+  - id: us_weekly_players
+    label: Weekly video-game players in the US
+    value: 212.3
+    display_value: 212.3M
+    detail: 67% of Americans aged 5–90; up 7.2M from 2025
+    scope: United States residents playing at least one hour per week; February 2026 survey
+    unit: million players
+    category: Players
+    kind: Reported
+    observed_on: 2026-02-25
+    period_start: 2026-02-11
+    period_end: 2026-02-25
+    published_on: 2026-06-03
+    source: ESA Essential Facts
+    origin: YouGov survey of 13,545 people commissioned by ESA
+    source_relationship: Original source
+    carried_forward: true
+    source_url: https://www.theesa.com/resources/essential-facts-about-the-us-video-game-industry/2026-data/
+    evidence_excerpt: "Weekly video-game players in the US: 212.3M. 67% of Americans aged 5–90; up 7.2M from 2025"
+    collected_on: 2026-09-24
+  - id: europe_games_revenue
+    label: European games revenue
+    value: 29.7
+    display_value: EUR29.7B
+    detail: 91% digital and 9% physical
+    scope: 16 European markets; calendar 2025
+    unit: billion euros
+    category: Market
+    kind: Reported
+    observed_on: 2025-12-31
+    period_start: 2025-01-01
+    period_end: 2025-12-31
+    published_on: 2026-08-26
+    source: Video Games Europe & EGDF Key Facts
+    origin: Video Games Europe and EGDF, All About Games 2025
+    source_relationship: Original source
+    source_url: https://www.videogameseurope.eu/news/video-games-industry-annual-key-facts-published-today-with-new-markets-new-rules-and-huge-ambition/
+    evidence_excerpt: Revenue is €29.7 billion ()
+    collected_on: 2026-09-24
+    carried_forward: true
 evidence_run_id: baseline-2026-08-23
 methodology_version: evidence-v1
 regenerated_at: 2026-09-28
-revision_summary: Regenerated against the versioned evidence model with complete source links and stored atomic observations.
+revision_summary: Added scoped career indicators and diverse market sources; shortened explanations and report text.
 snapshot:
   global_games_revenue: global_games_revenue
   global_players: global_players
   global_spenders: global_spenders
   entry_level_role_share: entry_level_role_share
   current_year_layoffs: confirmed_layoffs_2026
+updated: 2026-10-13
 ---
 
 # Game Industry Data Snapshot
 
 ## Industry summary
 
-The twelve months ending 23 August 2026 describe an industry in which commercial activity continued at scale while employment security and access to the profession remained weak. The clearest labour signal is not a single global workforce count—none exists—but the agreement between narrower observations. The ASGC tracker documented 10,140 announced layoffs through 11 August. In GDC's 2026 survey, 28% of respondents said they had been laid off during the preceding two years, and half said their current or most recent employer had conducted layoffs in the preceding twelve months. Those sources cover a tracker and a self-selected professional survey respectively, so neither is a global census. Together they establish that disruption was widespread, not its exact worldwide size.
+Games spending and investment remained substantial while layoffs and difficult career outcomes persisted. This baseline covers 24 August 2025–23 August 2026.
 
-The talent pipeline did not stop. The latest official United States IPEDS completion file released during the window records 3,455 first-major awards across two specifically game-labelled CIP codes in 2024: 2,964 in Game and Interactive Media Design and 491 in Computer Game Programming. This is a concrete graduate-supply baseline, not an estimate of new games workers. Awards are not unique people, US credentials are not global supply, and no public game-specific series connected these completions to subsequent entry into—or exit from—the industry. GDC's smaller student survey supplies a different signal: 74% of respondents were concerned about their future games job prospects. It measures sentiment, not starts, completions or employment outcomes.
-
-Capital and company results did not move uniformly with employment. InvestGame and Aream & Co. tracked $3.1 billion of private investment across 108 deals and $2.3 billion of merger-and-acquisition value across 54 transactions in the second quarter. Tencent reported domestic games revenue up 17%, Capcom reported quarterly net sales up 54.7%, and Electronic Arts reported fiscal-year net bookings up 9%. Ubisoft reported first-quarter net bookings down 9.2%, while Microsoft reported Xbox content and services revenue down 10% in its fiscal fourth quarter. These disclosures use different periods, currencies and definitions; their value is in showing dispersion, not producing a publisher league table.
-
-Commercial releases were broader than two exceptional examples. Circana's United States charts through July identify sixteen distinct releases, ports or bundles with top-ten full-game dollar-sales positions, led year to date by Resident Evil: Requiem, 007 First Light and Crimson Desert. The rankings are useful signals but not disclosed revenue or unit totals, and some digital sales are projected. Circana published the July tables on 1 September, after this report's cutoff; they are retained only as reporting-lag evidence about activity before 23 August.
-
-Overall, the baseline shows active spending and dealmaking alongside persistent workforce disruption and an unmeasured transition from education into professional work. The missing inflow and outflow series is itself an important finding: graduate counts, vacancies, layoffs and survey intentions must remain separate until a source follows identifiable games workers across the boundary.
-
-## Talent pipeline and workforce flow
+## Education and employment
 
 | Measure | Observation | What it measures | What it does not measure |
 |---|---:|---|---|
@@ -864,9 +1070,9 @@ Overall, the baseline shows active spending and dealmaking alongside persistent 
 | Game-specific workers leaving games | N/A | No compatible public series established | Layoffs are not substituted because many displaced workers remain in games |
 | Student starts | N/A | No reviewed cross-provider game-programme definition was completed | Enrolment or completions are not substituted |
 
-A future graduate-to-opportunity ratio must compare matching trailing-twelve-month flows over the same geography. This report does not compare annual completions with a point-in-time vacancy count.
+Graduate-to-opportunity ratios require matching annual flows and geography.
 
-## Major structural stories
+## Key signals
 
 | Story | Strongest evidence | Interpretation boundary |
 |---|---|---|
@@ -879,7 +1085,7 @@ A future graduate-to-opportunity ratio must compare matching trailing-twelve-mon
 
 ## Commercially significant releases
 
-Commercial significance here means a top-ten position in Circana's United States full-game dollar-sales chart for July 2026 or year to date through July. It does not mean the games are ranked globally, profitable, critically successful or comparable in unit sales.
+Circana US top-ten dollar-sales positions through July 2026; not global sales or profitability. July tables were published after the baseline cutoff.
 
 | Game | Publisher | US commercial signal through July 2026 |
 |---|---|---|
@@ -900,9 +1106,9 @@ Commercial significance here means a top-ten position in Circana's United States
 | Splatoon Raiders | Nintendo | #7 in July |
 | Echoes of Aincrad: Sword Art Online | Bandai Namco Entertainment | #8 in July |
 
-## Anticipated games monitoring set
+## Upcoming games
 
-This set records the first 20 results in Steam's most-wishlisted upcoming-games ordering captured on 27 September 2026. It is deliberately not presented as a 23 August ranking: Steam exposes neither a historical snapshot nor wishlist counts. It is a reproducible monitoring set for future reports, not an input to Report Zero's findings.
+Steam’s top 20 upcoming games by wishlist ordering, captured 27 September 2026. Post-cutoff monitoring only; wishlist counts are unavailable.
 
 | Rank | Game | Steam release indication |
 |---:|---|---|
@@ -927,10 +1133,14 @@ This set records the first 20 results in Steam's most-wishlisted upcoming-games 
 | 19 | over the hill | 14 October 2026 |
 | 20 | Nivalis Nights | 29 September 2026 |
 
-## Evidence gaps retained as data
+## Data gaps
 
-No value is reported for student starts, verified workers entering games, verified workers leaving games or a graduate-to-entry-opportunity ratio. Available administrative labour-flow datasets use classifications broader than games; presenting them as game-specific would create false precision. These gaps remain explicit so later reports can replace them when a reviewed programme list, linked graduate outcomes or a defensible games-workforce panel becomes available.
+Student starts, measured games-worker inflow/outflow and a graduate-to-opportunity ratio remain unavailable. Broader labour datasets cannot fill these gaps.
 
-## Evidence record
+## Career outcomes
 
-This report was regenerated against evidence schema 1.0.0. Its atomic observations, dashboard and validation result are stored under `data/evidence/baseline-2026-08-23/`.
+| Indicator | Value | Scope and limit |
+|---|---:|---|
+| Graduate entry by graduation | 36% | [Princeton Review](https://sftp01.princetonreview.com/public/file/in5wpnxk_ugwqac6xeuela/pc-gamer-article-2026.pdf): unweighted median of 43 selected undergraduate programmes; class of 2025. Seven missing rates excluded. |
+| Changed field or industry | 13.1% | [InGame Job / Values Value](https://investgame.net/wp-content/uploads/2025/11/Big_Games_Industry_Employment_Survey_2025.pdf#page=47): Europe, 2025 career changes; question response count undisclosed. Not a verified industry exit rate. |
+| No new job after layoffs | 48% | [GDC 2026](https://investgame.net/wp-content/uploads/2026/01/2026-01-29-dec052f4_d88e_48ce_9f83_a18ce2f2a6e5_541400_GDC26_PDF_SOTI_Report.pdf#page=13): respondents laid off in the preceding two years. Not a current workforce surplus. |

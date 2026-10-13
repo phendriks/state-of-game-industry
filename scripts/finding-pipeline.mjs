@@ -5,7 +5,7 @@ import { REPORT_MODEL_CONFIG } from '../src/data/reportConfig.ts';
 import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
 import { readSourceDiscovery } from './source-acquisition.mjs';
-import { hostnameMatches } from './report-lib.mjs';
+import { sourceUrlMatches } from './report-lib.mjs';
 import { readJson, readJsonLines } from './script-input.mjs';
 
 const directory = (root, runId) => path.join(path.resolve(root), runId);
@@ -43,7 +43,7 @@ export async function generateCandidateFindings(runId, client = pipelineOpenAICl
   }
   const response = await client.responses.create({ model: REPORT_MODEL_CONFIG.defaultModel, reasoning: { effort: REPORT_MODEL_CONFIG.reasoningEffort },
     text: { format: { type: 'json_schema', name: 'candidate_findings', strict: true, schema: candidateApiSchema } },
-    input: `Generate up to 20 distinct candidate games-industry findings from only the supplied evidence. Return fewer, or an empty list, when the evidence does not support more. Allow conflict, confusion, alignment and correction. Do not prefer drama. Do not invent facts or calculate new metrics. Every statement must cite supplied observation, event or metric IDs. These are candidates, not publishable conclusions.\nObservations: ${JSON.stringify(observations)}\nEvents: ${JSON.stringify(events)}\nDerived metrics: ${JSON.stringify(derived)}` });
+    input: `Generate up to 20 distinct candidate games-industry findings from only the supplied evidence. Keep titles under 10 words and statements under 35 words. State the concrete change or signal directly. Return fewer, or an empty list, when the evidence does not support more. Allow conflict, confusion, alignment and correction. Do not prefer drama. Do not invent facts or calculate new metrics. Every statement must cite supplied observation, event or metric IDs. These are candidates, not publishable conclusions.\nObservations: ${JSON.stringify(observations)}\nEvents: ${JSON.stringify(events)}\nDerived metrics: ${JSON.stringify(derived)}` });
   const parsed = JSON.parse(response.output_text);
   const candidates = candidateFindingCollectionSchemaV1.parse(parsed.candidates.map((candidate) => ({ ...candidate, schema_version: manifest.schema_version, methodology_version: 'findings-v1', run_id: runId, status: 'candidate' })));
   const observationIds = new Set(observations.map((item) => item.observation_id)); const eventIds = new Set(events.map((item) => item.event_id)); const metricIds = new Set((derived.metrics ?? []).map((item) => item.id));
@@ -117,7 +117,7 @@ export async function challengeCandidateFindings(runId, client = pipelineOpenAIC
       if (!source) issues.push(`Unapproved source ${evidence.source_id}.`);
       else {
         try {
-          if (!hostnameMatches(evidence.source_url, source.canonical_url)) issues.push(`URL is outside approved source ${evidence.source_id}.`);
+          if (!sourceUrlMatches(evidence.source_url, source)) issues.push(`URL is outside approved source ${evidence.source_id}.`);
         } catch { issues.push(`Invalid evidence URL for source ${evidence.source_id}.`); }
       }
       if (evidence.underlying_source_id && !sourceById.has(evidence.underlying_source_id)) issues.push(`Unapproved underlying source ${evidence.underlying_source_id}.`);

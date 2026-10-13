@@ -4,7 +4,7 @@ import { observationSchemaV1 } from '../src/data/evidence/schema-v1.ts';
 const slug = (value) => value.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const date = (value) => String(value).slice(0, 10);
 const instant = (value) => `${date(value)}T00:00:00Z`;
-const kinds = { Forecast: 'forecast', Estimate: 'estimated', Calculated: 'derived', Reported: 'reported' };
+const kinds = { Forecast: 'forecast', Estimate: 'estimated', Calculated: 'derived', Reported: 'reported', Survey: 'survey' };
 
 export function reportObservations(data, runId, acquisitionWindow) {
   const newsByName = new Map(NEWS_SOURCES.map((source) => [source.name, source]));
@@ -33,11 +33,13 @@ export function reportObservations(data, runId, acquisitionWindow) {
       observation_id: `${runId}-stat-${item.id}`.replace(/_/g, '-'), entity: item.dataset_name,
       entity_type: ['annual_game_specific_graduates', 'game_program_entrants'].includes(item.measure) ? 'education' : 'workforce',
       metric: slug(item.measure).replaceAll('-', '_'), value: item.derived_value ?? item.original_value, original_value: item.original_value,
-      unit: item.original_unit, reference_period_start: date(item.observed_on), reference_period_end: date(item.observed_on),
+      unit: item.original_unit, reference_period_start: date(item.period_start ?? item.observed_on), reference_period_end: date(item.period_end ?? item.observed_on),
       observed_at: instant(item.release_date ?? item.observed_on), retrieved_at: instant(item.retrieved_at),
-      source_id: `stat-${item.source_id}`, source_url: item.source_url, underlying_source_id: null, geography: item.geography,
-      evidence_type: item.transformation ? 'derived' : 'reported', evidence_class: item.carried_forward ? 'historical_baseline' : 'context',
-      confidence: 'high', raw_claim: item.evidence_excerpt, normalized_claim: `${item.label}: ${item.display_value}. ${item.detail}`,
+      source_id: `stat-${item.source_id}`, source_url: item.source_url,
+      underlying_source_id: item.source_id === 'gdc-career-outcomes' ? 'news-gdc-state-of-the-game-industry' : null, geography: item.geography,
+      evidence_type: item.measurement_type === 'Survey' ? 'survey' : item.transformation ? 'derived' : 'reported',
+      evidence_class: item.carried_forward ? 'historical_baseline' : 'context',
+      confidence: item.measurement_type === 'Survey' ? 'medium' : 'high', raw_claim: item.evidence_excerpt, normalized_claim: `${item.label}: ${item.display_value}. ${item.detail}`,
       ...(item.dataset_id ? { dataset_id: item.dataset_id } : {}), ...(item.table_id ? { table_id: item.table_id } : {}),
       ...(item.query_or_filters ? { query_or_filter: item.query_or_filters } : {}), ...(item.raw_file_hash ? { source_hash: item.raw_file_hash } : {})
     });

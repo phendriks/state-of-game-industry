@@ -14,7 +14,7 @@ export const runStageNames = ['source-discovery', 'observations', 'events', 'nor
 export const evidenceClasses = ['window', 'context', 'historical_baseline'] as const;
 export const candidateRejectionReasons = ['duplicate', 'low_provenance', 'seo_aggregation', 'no_original_methodology', 'stale', 'inaccessible', 'unverifiable'] as const;
 
-const runStages = z.object(Object.fromEntries(runStageNames.map((name) => [name, z.enum(['pending', 'written'])])) as Record<(typeof runStageNames)[number], z.ZodTypeAny>).strict();
+const runStages = z.object(Object.fromEntries(runStageNames.map((name) => [name, z.enum(['pending', 'written'])])) as unknown as Record<(typeof runStageNames)[number], z.ZodTypeAny>).strict();
 
 export const runManifestSchemaV1 = z.object({
   run_id: id,
@@ -46,6 +46,7 @@ const acquisitionSourceSchema = z.object({
   name: z.string().trim().min(1),
   publisher: z.string().trim().min(1),
   canonical_url: z.string().url(),
+  evidence_urls: z.array(z.string().url()).optional(),
   registry: z.enum(['news', 'statistical']),
   category: z.string().trim().min(1),
   geography: z.string().trim().min(1),

@@ -6,9 +6,13 @@
       "id": "global_games_revenue",
       "label": "Global games revenue",
       "value": 213.9,
-      "secondary_value": "+6.1% year over year",
       "unit": "billion US dollars",
       "status": "forecast",
+      "source_id": "news-newzoo",
+      "source_url": "https://newzoo.com/articles/executive-summary-ggmr-2026-free-edition",
+      "geography": "Global market; 2026 full year",
+      "reference_period_start": "2026-01-01",
+      "reference_period_end": "2026-12-31",
       "observation_ids": [
         "report-2026-09-24-global-games-revenue"
       ]
@@ -17,77 +21,165 @@
       "id": "global_players",
       "label": "Global players",
       "value": 3.7,
-      "secondary_value": "+4.4% year over year",
       "unit": "billion players",
       "status": "forecast",
+      "source_id": "news-newzoo",
+      "source_url": "https://newzoo.com/articles/executive-summary-ggmr-2026-free-edition",
+      "geography": "Global market; 2026 full year",
+      "reference_period_start": "2026-01-01",
+      "reference_period_end": "2026-12-31",
       "observation_ids": [
         "report-2026-09-24-global-players"
       ]
     },
     {
-      "id": "global_spenders",
-      "label": "Global spenders",
-      "value": 1.65,
-      "secondary_value": "2026 market forecast",
-      "unit": "billion spenders",
-      "status": "forecast",
+      "id": "us_weekly_players",
+      "label": "US weekly players",
+      "value": 212.3,
+      "unit": "million players",
+      "status": "reported",
+      "source_id": "news-esa-essential-facts",
+      "source_url": "https://www.theesa.com/resources/essential-facts-about-the-us-video-game-industry/2026-data/",
+      "geography": "United States residents playing at least one hour per week; February 2026 survey",
+      "reference_period_start": "2026-02-11",
+      "reference_period_end": "2026-02-25",
       "observation_ids": [
-        "report-2026-09-24-global-spenders"
+        "report-2026-09-24-us-weekly-players-2026"
       ]
     },
     {
-      "id": "new_job_listings",
-      "label": "Roles opened in seven days",
-      "value": 451,
-      "secondary_value": "Newly listed positions",
-      "unit": null,
+      "id": "europe_games_revenue",
+      "label": "European games revenue",
+      "value": 29.7,
+      "unit": "billion euros",
       "status": "reported",
+      "source_id": "news-video-games-europe-egdf-key-facts",
+      "source_url": "https://www.videogameseurope.eu/news/video-games-industry-annual-key-facts-published-today-with-new-markets-new-rules-and-huge-ambition/",
+      "geography": "16 European markets; calendar 2025",
+      "reference_period_start": "2025-01-01",
+      "reference_period_end": "2025-12-31",
       "observation_ids": [
-        "report-2026-09-24-new-roles-seven-days"
+        "report-2026-09-24-europe-games-revenue-2025"
+      ]
+    },
+    {
+      "id": "open_roles",
+      "label": "Open positions",
+      "value": 6171,
+      "unit": "source-defined",
+      "status": "reported",
+      "source_id": "news-devquest-hiring-report",
+      "source_url": "https://devquest.gg/game-industry-hiring-report",
+      "geography": "DevQuest tracked companies",
+      "reference_period_start": "2026-09-22",
+      "reference_period_end": "2026-09-22",
+      "observation_ids": [
+        "report-2026-09-24-open-roles"
       ]
     },
     {
       "id": "entry_level_role_share",
-      "label": "Entry-level role share",
+      "label": "Entry-level share",
       "value": 5.9,
-      "secondary_value": "366 of 6,171 tracked openings",
-      "unit": null,
+      "unit": "source-defined",
       "status": "reported",
+      "source_id": "news-devquest-hiring-report",
+      "source_url": "https://devquest.gg/game-industry-hiring-report",
+      "geography": "DevQuest tracked vacancies",
+      "reference_period_start": "2026-09-22",
+      "reference_period_end": "2026-09-22",
       "observation_ids": [
         "report-2026-09-24-entry-level-role-share"
       ]
     },
     {
-      "id": "mid_level_role_share",
-      "label": "Mid-level role share",
-      "value": 47.7,
-      "secondary_value": "2,942 of 6,171 tracked openings",
-      "unit": "percent of tracked openings",
-      "status": "derived",
+      "id": "gdc_employers_with_layoffs",
+      "label": "Employer layoff exposure",
+      "value": 50,
+      "unit": "percent",
+      "status": "survey",
+      "source_id": "news-gdc-state-of-the-game-industry",
+      "source_url": "https://gdconf.com/article/gdc-2026-state-of-the-game-industry-reveals-impact-of-layoffs-generative-ai-and-more/",
+      "geography": "GDC State of the Game Industry survey respondents",
+      "reference_period_start": "2026-01-28",
+      "reference_period_end": "2026-01-28",
       "observation_ids": [
-        "report-2026-09-24-mid-level-role-share"
+        "report-2026-09-24-gdc-employers-with-layoffs"
       ]
     },
     {
-      "id": "current_year_layoffs",
-      "label": "Confirmed 2026 layoffs",
+      "id": "confirmed_layoffs_2026",
+      "label": "Tracked 2026 layoffs",
       "value": 10140,
-      "secondary_value": "Confirmed total in the tracker",
       "unit": "count",
       "status": "reported",
+      "source_id": "news-asgc-layoffs-tracker",
+      "source_url": "https://layoffs.asgc.gg/",
+      "geography": "ASGC tracked announcements; 2026 year to date",
+      "reference_period_start": "2026-08-11",
+      "reference_period_end": "2026-08-11",
       "observation_ids": [
         "report-2026-09-24-confirmed-layoffs-2026"
       ]
     },
     {
-      "id": "projected_layoffs",
-      "label": "Forecast 2026 layoffs",
-      "value": 14666,
-      "secondary_value": "Full-year projection",
-      "unit": "count",
-      "status": "forecast",
+      "id": "game_specific_graduates",
+      "label": "Game-specific awards",
+      "value": 3455,
+      "unit": "awards",
+      "status": "derived",
+      "source_id": "stat-us-nces-ipeds",
+      "source_url": "https://nces.ed.gov/ipeds/datacenter/data/C2024_A.zip",
+      "geography": "United States",
+      "reference_period_start": "2024-12-31",
+      "reference_period_end": "2024-12-31",
       "observation_ids": [
-        "report-2026-09-24-forecast-layoffs-2026"
+        "report-2026-09-24-stat-us-game-specific-awards-2024"
+      ]
+    },
+    {
+      "id": "graduate_entry_by_graduation",
+      "label": "Graduate entry by graduation",
+      "value": 36,
+      "unit": "percent; unweighted programme median",
+      "status": "derived",
+      "source_id": "stat-princeton-game-design-outcomes",
+      "source_url": "https://sftp01.princetonreview.com/public/file/in5wpnxk_ugwqac6xeuela/pc-gamer-article-2026.pdf",
+      "geography": "Selected undergraduate programmes in the US and abroad",
+      "reference_period_start": "2025-01-01",
+      "reference_period_end": "2025-12-31",
+      "observation_ids": [
+        "report-2026-09-24-stat-princeton-undergraduate-entry-2025"
+      ]
+    },
+    {
+      "id": "career_switching_share",
+      "label": "Changed field or industry",
+      "value": 13.1,
+      "unit": "percent of career-change responses; base count undisclosed",
+      "status": "survey",
+      "source_id": "stat-ingamejob-valuesvalue-employment",
+      "source_url": "https://investgame.net/wp-content/uploads/2025/11/Big_Games_Industry_Employment_Survey_2025.pdf#page=47",
+      "geography": "European survey respondents; career-change question population",
+      "reference_period_start": "2025-06-30",
+      "reference_period_end": "2025-06-30",
+      "observation_ids": [
+        "report-2026-09-24-stat-europe-career-switching-2025"
+      ]
+    },
+    {
+      "id": "post_layoff_joblessness_share",
+      "label": "No new job after layoffs",
+      "value": 48,
+      "unit": "percent of laid-off respondents",
+      "status": "survey",
+      "source_id": "stat-gdc-career-outcomes",
+      "source_url": "https://investgame.net/wp-content/uploads/2026/01/2026-01-29-dec052f4_d88e_48ce_9f83_a18ce2f2a6e5_541400_GDC26_PDF_SOTI_Report.pdf#page=13",
+      "geography": "International GDC survey respondents who experienced layoffs",
+      "reference_period_start": "2026-01-28",
+      "reference_period_end": "2026-01-28",
+      "observation_ids": [
+        "report-2026-09-24-stat-gdc-post-layoff-joblessness-2026"
       ]
     }
   ],

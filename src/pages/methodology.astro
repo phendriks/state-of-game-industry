@@ -6,76 +6,49 @@ import { DASHBOARD_DATA_TODOS } from '../data/dashboardMetrics';
   <section class="hero compact">
     <p class="eyebrow">Transparency</p>
     <h1>Methodology</h1>
-    <p class="lede">The Observatory is a source-backed temperature check across the wider games domain. It is not an official statistical authority.</p>
+    <p class="lede">Source figures, short updates and visible limits. No combined industry score.</p>
   </section>
 
   <article class="prose panel">
-    <h2>What counts as the games industry?</h2>
-    <p>There is no single global definition. A market report, company filing, workforce survey and government register may each cover a different population. The Observatory keeps those differences visible instead of forcing them into one definition.</p>
-    <p>An observation may be useful when it concerns games, game development, businesses, workers, players, markets or closely related activity. Inclusion does not mean that every company or activity has been formally classified as part of the games industry.</p>
-
-    <h2>From source to observation</h2>
-    <p>The observation is the basic unit of evidence. Each numeric observation records its source, scope, date and data type. It may also record a unit, reference period, publication date, collection date, underlying origin or source relationship.</p>
-    <p>The public report presents the information in the opposite order: a short interpretation first, then the observations, then their sources and any known source relationships.</p>
-
-    <h2>Dashboard indicator schema</h2>
-    <p>The overview uses three stable groups: worldwide players and market, employment conditions, and talent pipeline and workforce flow. Employment combines the separately labelled DevQuest vacancy dataset and ASGC layoff tracker; neither is presented as a global workforce census. Each available slot references a stored observation, so its scope, date, type and source remain visible.</p>
-    <p>Talent slots cover game-specific graduates, workers entering games, workers leaving games and a future graduate-to-entry-opportunity ratio. Missing indicators remain visible as unavailable. Broader sector proxies, layoffs and intent-to-leave surveys cannot fill these slots.</p>
-    <p>When no compatible figure is published during the current collection window, the latest compatible observation may be carried forward with its original observation date. The graduate-to-entry-opportunity ratio requires matching trailing-12-month flows on both sides; it never compares annual graduates with today’s open jobs.</p>
-    <p>A result from one company, developer, publisher or game cannot fill an overview slot. Those observations remain available in the detailed tables.</p>
-
-    <h3>Open measurement work</h3>
-    <p>Some useful indicators remain explicit research tasks after the twelve-month baseline found no defensible game-specific observation. They stay unavailable until the required evidence exists.</p>
-    <ul>
-      {DASHBOARD_DATA_TODOS.map((item)=><li><strong>{item.label}:</strong> {item.evidenceNeeded} {item.nextStep}</li>)}
-    </ul>
+    <h2>Scope and dates</h2>
+    <p>Each figure keeps its source, population, region, period and type. Countries, platforms and company results remain separate. Annual benchmarks keep their original dates when carried forward.</p>
 
     <h2>Data types</h2>
     <ul>
-      <li><strong>Reported</strong> means the named source published or directly counted the figure.</li>
-      <li><strong>Calculated</strong> means the Observatory performed simple arithmetic. The formula and source inputs must be stored with the result.</li>
-      <li><strong>Forecast</strong> means a source projected a future value.</li>
-      <li><strong>Estimate</strong> means a third party modeled a value that was not officially disclosed.</li>
+      <li><strong>Reported:</strong> published or counted by the source.</li>
+      <li><strong>Survey:</strong> applies to respondents or participating institutions.</li>
+      <li><strong>Calculated / Derived:</strong> arithmetic with stored inputs and a formula.</li>
+      <li><strong>Forecast:</strong> a projection.</li>
+      <li><strong>Estimate:</strong> a modelled figure.</li>
     </ul>
-    <p>These types remain separate. The Observatory does not combine them into a single industry score.</p>
 
-    <h2>Sources and independence</h2>
-    <p>Publication count is not the same as independent evidence. Ten articles repeating one press release still have one underlying origin.</p>
-    <p>Where it is clear, the Observatory may record whether a source is original, first-party, independent reporting, funded or owned by another organisation, derived from another source, or repeating another publication. These relationships provide context. They are not quality scores.</p>
-    <p>First-party information can be the best source for what a company officially reported. It may still be unsuitable as independent evidence for a wider claim. When a relationship cannot be established, it remains unknown. The system must never invent one.</p>
-
-    <h2>Collection rules</h2>
+    <h2>Reading the dashboard</h2>
     <ul>
-      <li>Do not combine observations with different populations, regions, platforms, definitions or periods without making the difference clear.</li>
-      <li>Commercial results distinguish official disclosures from modeled estimates.</li>
-      <li>Layoff totals are minimums when companies do not disclose affected headcount.</li>
-      <li>Open-job counts measure advertised demand, not completed hiring. A missing listing is called removed, not filled, unless the employer confirms a hire.</li>
-      <li>Platform activity describes that platform only. It is not presented as total industry activity.</li>
-      <li>Company-register data describes legal entities. It is not automatically the same as a count of studios.</li>
-      <li>Quarterly results and annual surveys keep their original cadence. They are not described as new fortnightly observations.</li>
+      <li><strong>Markets:</strong> global forecasts, US players and European revenue use different definitions and periods.</li>
+      <li><strong>Jobs:</strong> advertised vacancies measure demand, not completed hires. A removed listing is not proof of hiring.</li>
+      <li><strong>Layoffs:</strong> trackers count documented announcements; incomplete disclosures can undercount workers.</li>
+      <li><strong>Employer exposure:</strong> respondents reporting employer layoffs, not a percentage of companies.</li>
+      <li><strong>Graduate entry:</strong> an unweighted median of selected undergraduate programme rates. Missing rates and postgraduate programmes are excluded.</li>
+      <li><strong>Career switching:</strong> the source combines changes of field and industry; its question response count is undisclosed.</li>
+      <li><strong>Joblessness:</strong> outcomes among laid-off survey respondents, not a worldwide available-worker count.</li>
     </ul>
 
-    <h2>Talent pipeline &amp; workforce flow</h2>
-    <p>The Observatory maintains a separate observation base for student inflow and professional outflow. The United States, Netherlands, United Kingdom, Canada, Australia, Japan, South Korea, China and several European or international systems have defensible official datasets, but their populations, classifications and release schedules differ. They are not combined into a synthetic global workforce total.</p>
-    <p>Education observations distinguish game-specific programmes from game-adjacent programmes and general context. Game-specific means that an official programme name or classification explicitly targets games or game development. Computer science, animation, VFX, interactive media, digital art and similar fields remain game-adjacent unless their official identity is explicitly games-focused.</p>
-    <p>Graduate counts can often be tied to programme records. Professional outflow is harder: public labour datasets usually group games with broader software, publishing or creative activity. Employer separations, movement between games employers, movement out of games, movement into non-employment, workforce contraction and survey intent to leave therefore remain separate concepts. Intent to leave is sentiment, not observed attrition.</p>
-    <p>The <a href={`${import.meta.env.BASE_URL}statistical-sources/`}>statistical source registry</a> shows which datasets can support each part of this work and labels their precision as game-specific, game-adjacent, sector proxy or general context. “Unavailable” is preferable to extending one country’s observations to another.</p>
+    <h2>Education and worker movement</h2>
+    <p>Game-specific education requires an explicitly games-focused programme or classification. Broader computing, animation and creative courses remain adjacent. Awards count credentials, not unique people or new workers.</p>
+    <p>Employer separations, moves between games companies, industry exits, non-employment and intent to leave are distinct. Survey percentages are never multiplied by tracked layoffs to estimate a global workforce surplus.</p>
+    <p>The <a href={`${import.meta.env.BASE_URL}statistical-sources/`}>statistical registry</a> lists datasets and their coverage limits.</p>
 
-    <h2>Statistical provenance and raw data</h2>
-    <p>Future statistical observations preserve the publisher, dataset and table identifiers, official URL, geography, reference and release dates, retrieval date, revision status, classification system and code, original unit and value, filters, transformation, methodology version, precision class and coverage notes.</p>
-    <p>Whenever practical, the exact CSV, XLSX or JSON used for an observation is retained. If a raw file is too large or its licence prevents repository storage, the Observatory records an immutable release identifier or externally stored object reference plus a SHA-256 hash. A small manifest can remain in the repository while large source files remain in suitable external storage.</p>
-    <p>That record makes four different changes distinguishable: a real change in the measured population, a revision by the publisher, a changed programme or workforce classification, and a changed Observatory method. Derived figures always retain their inputs and transformation.</p>
+    <h3>Open measurement work</h3>
+    <ul>
+      {DASHBOARD_DATA_TODOS.map(item => <li><strong>{item.label}:</strong> {item.evidenceNeeded} {item.nextStep}</li>)}
+    </ul>
 
-    <h2>Languages</h2>
-    <p>Useful evidence does not have to be in English. The registry can record a source's language and region. AI-assisted extraction may produce a clear English summary, but it must keep the original source, meaning, limits and uncertainty. An English source is not automatically better than a local-language source.</p>
+    <h2>Evidence and independence</h2>
+    <p>Reports repeating one source count as one origin. Known ownership, funding and source relationships are recorded; unknown relationships stay unknown. Company registers count legal entities, not necessarily studios.</p>
+    <p>Evidence records retain source URLs, dataset IDs, dates, revisions, classifications, filters and transformations. Raw files are retained where practical; large or restricted files can use release IDs, external references and hashes.</p>
 
-    <h2>How reports are written</h2>
-    <p>Structured observations and source evidence are collected before explanatory text is written. Each report contains one short industry summary. The remaining tables are generated from the structured observations.</p>
-    <p>AI assistance may condense observations into the summary. It may not manufacture values, fill gaps, invent independence, strengthen translated claims or silently change an observation's scope.</p>
-
-    <h2>Human review and limits</h2>
-    <p>Every report states whether a person reviewed it. A reviewed report also names the reviewer. Human review can catch mistakes, but it is not an independent audit.</p>
-    <p>Source coverage is still uneven. It is strongest in English-language, North American and European reporting. The expanded registry improves coverage of Asia, MENA and local-language sources, but private companies, smaller studios and some platforms remain harder to observe.</p>
-    <p>Sources, extraction and summaries can contain errors. Readers should check important claims against the linked original material.</p>
+    <h2>Writing and review</h2>
+    <p>Reports lead with a brief update, then key findings and data. AI may summarise evidence, including non-English sources, but must preserve its meaning and uncertainty. Missing values stay missing.</p>
+    <p>Every report states its review status. Human review is not an independent audit. Coverage favours English-language, North American and European sources; private companies and smaller studios are less visible.</p>
   </article>
 </BaseLayout>

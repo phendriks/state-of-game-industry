@@ -9,6 +9,8 @@ import { collectMonthlyEvidence } from './collect-monthly-evidence.mjs';
 import { publishRun } from './publish-run.mjs';
 import { amsterdamDate, readReport, reportWindow, resolveReportDate } from './report-lib.mjs';
 import { testPipelineOpenAI } from './test-pipeline-openai.mjs';
+import { buildDashboardReport, buildDashboardSections, DASHBOARD_SECTIONS } from '../src/data/dashboardMetrics.ts';
+import { graduateEntryMedian } from '../src/data/talentIndicators.ts';
 
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'observatory-monthly-'));
 const root = path.join(temporary, 'runs');
@@ -54,6 +56,60 @@ const fakeClient = { responses: { create: async (request) => {
 } } };
 
 try {
+  const current = await readReport('src/data/reports/2026-09-24.md');
+  const historical = await readReport('src/data/reports/2026-ytd-baseline.md');
+  for (const runId of ['baseline-2026-08-23', 'report-2026-09-24']) {
+    const archive = path.join('data/evidence',runId);
+    const dashboard = await readJson(path.join(archive,'dashboard.json'));
+    const records = (await fs.readFile(path.join(archive,'observations.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);
+    const recordIds = new Set(records.map(item=>item.observation_id));
+    assert.equal(dashboard.fixed.length,12);
+    assert.ok(dashboard.fixed.every(card=>card.value!==null && card.observation_ids.every(id=>recordIds.has(id))));
+  }
+  for (const report of [current, historical]) {
+    const sections = buildDashboardSections(report.data);
+    assert.equal(sections.flatMap(section => section.metrics).length, 12);
+    assert.ok(sections.flatMap(section => section.metrics).every(card => card.status === 'available'));
+    const marketSources = new Set(sections[0].metrics.map(card => card.source));
+    assert.equal(marketSources.size, 3);
+    const careers = sections[2].metrics;
+    assert.deepEqual(careers.map(card => card.value), ['3,455', '36%', '13.1%', '48%']);
+    assert.deepEqual(careers.map(card => card.kind), ['Derived', 'Derived', 'Survey', 'Survey']);
+    assert.match(careers[2].secondaryValue, /undisclosed/);
+    assert.equal(sections[1].metrics[2].kind, 'Survey');
+    const graduate = report.data.statistical_observations.find(item => item.measure === 'graduate_entry_by_graduation');
+    assert.equal(graduate.inputs.length, 43);
+    assert.equal(graduateEntryMedian(graduate.inputs), 36);
+  }
+  assert.equal(graduateEntryMedian([{value:10},{value:30}]), 20);
+  assert.throws(() => graduateEntryMedian([{value:101}]), /between 0 and 100/);
+  const sparse = { ...current, data: { ...current.data, metrics: [], statistical_observations: [], talent_pipeline: undefined } };
+  const combined = buildDashboardReport(sparse, historical);
+  assert.ok(combined.data.metrics.every(item => item.carried_forward));
+  assert.equal(buildDashboardSections(combined.data)[2].metrics[1].value, '36%');
+  const annualCarry = await collectMonthlyEvidence('2026-10-24', {responses:{create:async request => {
+    assert.match(request.input, /graduate_entry_by_graduation/);
+    assert.match(request.input, /Do not multiply a survey rate/);
+    return {output_text:JSON.stringify({observations:[],statistical_observations:[]})};
+  }}}, current);
+  assert.equal(annualCarry.statistical_observations.find(item=>item.measure==='graduate_entry_by_graduation').observed_on, '2025-12-31');
+  assert.ok(annualCarry.talent_pipeline.career_switching);
+  assert.equal(annualCarry.metrics.find(item=>item.id==='gdc_employers_with_layoffs').value, 50);
+  assert.ok(annualCarry.metrics.find(item=>item.id==='gdc_employers_with_layoffs').carried_forward);
+  const storedGraduate = current.data.statistical_observations.find(item=>item.measure==='graduate_entry_by_graduation');
+  const recalculated = await collectMonthlyEvidence('2026-10-24', {responses:{create:async()=>({output_text:JSON.stringify({
+    observations:[], statistical_observations:[{...storedGraduate,original_value:999,derived_value:999,display_value:'999%'}]
+  })})}}, current);
+  const refreshedGraduate = recalculated.statistical_observations.find(item=>item.id===storedGraduate.id);
+  assert.equal(refreshedGraduate.derived_value,36,'Fresh graduate medians must be computed from programme inputs');
+  assert.equal(refreshedGraduate.display_value,'36%');
+  assert.equal(refreshedGraduate.carried_forward,false);
+  const careerRunId = 'report-2026-10-24-career-test';
+  await generateMonthlyRun({ reportDate:'2026-10-24', runId:careerRunId }, {root,client:fakeClient,collect:async()=>annualCarry});
+  const careerArtifact = await readJson(path.join(root,careerRunId,'dashboard.json'));
+  assert.equal(careerArtifact.fixed.find(card=>card.id==='graduate_entry_by_graduation').value,36);
+  assert.equal(careerArtifact.fixed.find(card=>card.id==='post_layoff_joblessness_share').status,'survey');
+  calls.length = 0;
   await testPipelineOpenAI();
   assert.equal(resolveReportDate(undefined, '2026-09-28'), '2026-09-24');
   assert.equal(resolveReportDate('', '2026-09-24'), '2026-09-24');
@@ -78,6 +134,8 @@ try {
   assert.equal(draft.data.talent_pipeline.workforce_flow?.industry_outflow, undefined);
   assert.equal((await readJson(path.join(base, 'candidate-findings.json'))).length, 1);
   assert.equal((await readJson(path.join(base, 'validation.json'))).status, 'passed');
+  const artifact = await readJson(path.join(base, 'dashboard.json'));
+  assert.deepEqual(artifact.fixed.map(card=>card.id), DASHBOARD_SECTIONS.flatMap(section=>section.metrics.map(card=>card.id)));
   await assert.rejects(fs.access(path.join(reportsRoot, `${date}.md`)), { code: 'ENOENT' });
   let builds = 0;
   await publishRun(runId, { root, reportsRoot, evidenceRoot, build: async () => { builds += 1; } });

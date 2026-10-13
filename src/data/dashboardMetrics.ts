@@ -1,7 +1,8 @@
 import type { CollectionEntry } from 'astro:content';
+import { STATISTICAL_SOURCES } from './statisticalSources';
 
 export type DashboardMetricStatus = 'available' | 'data-not-found' | 'baseline-not-established';
-export type DashboardMetricKind = 'Reported' | 'Forecast' | 'Estimated' | 'Derived';
+export type DashboardMetricKind = 'Reported' | 'Forecast' | 'Estimated' | 'Derived' | 'Survey';
 export type DashboardMetricCard = {
   id: string;
   label: string;
@@ -13,304 +14,134 @@ export type DashboardMetricCard = {
   referenceDate: string;
   kind: DashboardMetricKind;
   status: DashboardMetricStatus;
-  missingReason?: string
+  carriedForward?: boolean;
+  missingReason?: string;
 };
-
 export type DashboardMetricSection = {
   id: string;
   title: string;
   description: string;
-  metrics: DashboardMetricCard[]
+  metrics: DashboardMetricCard[];
 };
-
 export type DashboardDataTodo = {
   id: string;
   label: string;
   evidenceNeeded: string;
-  nextStep: string
+  nextStep: string;
 };
 
-type Metric = {
-  id: string;
-  value: number;
-  display_value: string;
-  detail: string;
-  scope: string;
-  kind: string;
-  source: string;
-  source_url?: string;
-  observed_on: Date | string
-};
+type ReportData = Pick<CollectionEntry<'reports'>['data'], 'metrics' | 'statistical_observations' | 'talent_pipeline'>;
 
-type Observation = {
-  id: string;
-  display_value: string;
-  detail: string;
-  source_id: string;
-  source_url: string;
-  geography: string;
-  reference_period: string
-};
-
-type Reference = { observation_ids: string[] };
-
-type ReportData = {
-  metrics?: Metric[];
-  statistical_observations?: Observation[];
-  talent_pipeline?: {
-    graduate_supply?: Reference;
-    graduate_to_entry_opportunity_ratio?: Reference;
-    workforce_flow?: {
-      industry_inflow?: Reference;
-      industry_outflow?: Reference
-    }
+// Shared by the site and the evidence artifact; each slot names its actual measure.
+export const DASHBOARD_SECTIONS = [
+  {
+    id: 'worldwide-market',
+    title: 'Players & markets',
+    description: 'Global forecasts, US players and European revenue. Dates and coverage differ.',
+    metrics: [
+      { id: 'global_games_revenue', label: 'Global games revenue' },
+      { id: 'global_players', label: 'Global players' },
+      { id: 'us_weekly_players', label: 'US weekly players' },
+      { id: 'europe_games_revenue', label: 'European games revenue' }
+    ]
+  },
+  {
+    id: 'employment-conditions',
+    title: 'Employment conditions',
+    description: 'Advertised jobs, employer layoff exposure and tracked layoffs.',
+    metrics: [
+      { id: 'open_roles', label: 'Open positions' },
+      { id: 'entry_level_role_share', label: 'Entry-level share' },
+      { id: 'gdc_employers_with_layoffs', label: 'Employer layoff exposure' },
+      { id: 'confirmed_layoffs_2026', label: 'Tracked 2026 layoffs' }
+    ]
+  },
+  {
+    id: 'talent-flow',
+    title: 'Talent supply & career outcomes',
+    description: 'Education awards and career surveys; no global workforce total.',
+    metrics: [
+      { id: 'game_specific_graduates', label: 'Game-specific awards', measure: 'annual_game_specific_graduates', reference: 'graduate_supply' },
+      { id: 'graduate_entry_by_graduation', label: 'Graduate entry by graduation', measure: 'graduate_entry_by_graduation', reference: 'graduate_entry' },
+      { id: 'career_switching_share', label: 'Changed field or industry', measure: 'career_switching_share', reference: 'career_switching' },
+      { id: 'post_layoff_joblessness_share', label: 'No new job after layoffs', measure: 'post_layoff_joblessness_share', reference: 'post_layoff_joblessness' }
+    ]
   }
-};
-
-export const DASHBOARD_METRIC_IDS = [
-  'global_games_revenue',
-  'global_players',
-  'global_spenders',
-  'open_roles',
-  'tracked_studios',
-  'entry_level_role_share',
-  'entry_level_roles',
-  'hiring_concentration_top_20',
-  'confirmed_layoffs_2026'
 ] as const;
 
-export const DASHBOARD_DATA_TODOS: DashboardDataTodo[] = [
-  {
-    id: 'game_program_entrants',
-    label: 'Game-program student starts',
-    evidenceNeeded: 'Annual entrants from a reviewed list of explicitly game-specific programmes.',
-    nextStep: 'Complete versioned programme mappings for administrative education datasets before collecting totals.'
-  },
-  {
-    id: 'workers_entering_games',
-    label: 'Workers entering games',
-    evidenceNeeded: 'Observed moves from education, non-employment or non-games employers into identified games employers.',
-    nextStep: 'Find a longitudinal employer or worker dataset that identifies games employers without relying on broad-sector proxies.'
-  },
-  {
-    id: 'workers_leaving_games',
-    label: 'Workers leaving games',
-    evidenceNeeded: 'Observed moves from identified games employers to non-games employers or persistent non-employment.',
-    nextStep: 'Keep layoffs and intent-to-leave surveys separate while investigating linked workforce-flow data.'
-  },
-  {
-    id: 'graduate_entry_ratio',
-    label: 'Graduate-to-entry-opportunity ratio',
-    evidenceNeeded: 'Game-specific graduates and deduplicated entry-level opportunities measured over the same trailing 12 months and geography.',
-    nextStep: 'Establish a vacancy-flow series before calculating the ratio; do not use a point-in-time open-job count.'
-  }
+export const DASHBOARD_METRIC_IDS = [
+  ...DASHBOARD_SECTIONS.flatMap(section => section.metrics.filter(item => !('reference' in item)).map(item => item.id)),
+  'tracked_studios',
+  'entry_level_roles'
 ];
-const date = (value?: Date | string) => value
-  ? new Date(value).toLocaleDateString('en-GB', {
-      month: 'short',
-      year: 'numeric',
-      timeZone: 'UTC'
-    })
-  : 'Not established';
 
-const kind = (value: string): DashboardMetricKind => value === 'Forecast'
-  ? 'Forecast'
-  : value === 'Estimate'
-    ? 'Estimated'
-    : value === 'Calculated'
-      ? 'Derived'
-      : 'Reported';
+export const DASHBOARD_DATA_TODOS: DashboardDataTodo[] = [
+  { id: 'game_program_entrants', label: 'Game-program student starts', evidenceNeeded: 'Annual entrants from explicitly game-specific programmes.', nextStep: 'Complete reviewed programme mappings for administrative education datasets.' },
+  { id: 'workers_entering_games', label: 'Measured workers entering games', evidenceNeeded: 'Observed transitions into identified games employers.', nextStep: 'Investigate longitudinal datasets; graduate placement surveys remain separate.' },
+  { id: 'workers_leaving_games', label: 'Measured workers leaving games', evidenceNeeded: 'Observed transitions from games employers to other industries.', nextStep: 'Career-switching surveys cannot establish a worldwide exit count.' },
+  { id: 'graduate_entry_ratio', label: 'Graduate-to-entry-opportunity ratio', evidenceNeeded: 'Graduates and unique entry opportunities over matching years and geographies.', nextStep: 'Establish a vacancy-flow series before calculating a ratio.' }
+];
 
-const todoIds = new Set(DASHBOARD_DATA_TODOS.map(item => item.id));
-
-const missing = (
-  id: string,
-  label: string,
-  status: DashboardMetricStatus,
-  reason: string
-): DashboardMetricCard => ({
-  id,
-  label,
-  value: 'N/A',
-  secondaryValue: status === 'data-not-found' ? 'Data not found' : 'Baseline not established',
-  source: todoIds.has(id) ? 'Research todo' : 'No verified observation',
-  geography: 'Not established',
-  referenceDate: 'Not established',
-  kind: 'Reported',
-  status,
-  missingReason: reason
+const date = (value: Date | string) => new Date(value).toLocaleDateString('en-GB', {
+  month: 'short', year: 'numeric', timeZone: 'UTC'
 });
+const kind = (value: string): DashboardMetricKind => value === 'Estimate' ? 'Estimated'
+  : value === 'Calculated' ? 'Derived'
+  : value === 'Forecast' || value === 'Survey' || value === 'Derived' ? value : 'Reported';
 
-export function buildDashboardReport(
-  latest: CollectionEntry<'reports'>,
-  baseline?: CollectionEntry<'reports'>
-): CollectionEntry<'reports'> {
-  const latestObservationIds = new Set(
-    (latest.data.statistical_observations ?? []).map(observation => observation.id)
-  );
-  const dashboardObservations = [
-    ...(latest.data.statistical_observations ?? []),
-    ...(baseline?.data.statistical_observations ?? []).filter(
-      observation => !latestObservationIds.has(observation.id)
-    )
-  ];
-
-  // Latest values take precedence; baseline values fill the remaining fields.
-  const dashboardTalent = (latest.data.talent_pipeline || baseline?.data.talent_pipeline)
-    ? {
-        ...(baseline?.data.talent_pipeline ?? {}),
-        ...(latest.data.talent_pipeline ?? {}),
-        workforce_flow: {
-          ...(baseline?.data.talent_pipeline?.workforce_flow ?? {}),
-          ...(latest.data.talent_pipeline?.workforce_flow ?? {})
-        }
-      }
-    : undefined;
-
+export function buildDashboardReport(latest: CollectionEntry<'reports'>, baseline?: CollectionEntry<'reports'>): CollectionEntry<'reports'> {
+  const merge = <T extends { id: string; carried_forward: boolean }>(current: T[], historical: T[]) => {
+    const currentIds = new Set(current.map(item => item.id));
+    return [...current, ...historical.filter(item => !currentIds.has(item.id)).map(item => ({ ...item, carried_forward: true }))];
+  };
   return {
     ...latest,
     data: {
       ...latest.data,
-      statistical_observations: dashboardObservations,
-      talent_pipeline: dashboardTalent
+      metrics: merge(latest.data.metrics, baseline?.data.metrics ?? []),
+      statistical_observations: merge(latest.data.statistical_observations ?? [], baseline?.data.statistical_observations ?? []),
+      talent_pipeline: {
+        ...baseline?.data.talent_pipeline,
+        ...latest.data.talent_pipeline,
+        workforce_flow: { ...baseline?.data.talent_pipeline?.workforce_flow, ...latest.data.talent_pipeline?.workforce_flow }
+      }
     }
   };
 }
 
 export function buildDashboardSections(data: ReportData): DashboardMetricSection[] {
-  const metrics = new Map((data.metrics ?? []).map(item => [item.id, item]));
+  const metrics = new Map(data.metrics.map(item => [item.id, item]));
   const observations = new Map((data.statistical_observations ?? []).map(item => [item.id, item]));
+  const sources = new Map(STATISTICAL_SOURCES.map(item => [item.id, item.name]));
 
-  const metric = (
-    id: string,
-    label: string,
-    secondaryValue?: string
-  ): DashboardMetricCard => {
-    const item = metrics.get(id);
-    return item
-      ? {
-          id,
-          label,
-          value: item.display_value,
-          secondaryValue: secondaryValue ?? item.detail,
-          source: item.source,
-          sourceUrl: item.source_url,
-          geography: item.scope.toLowerCase().startsWith('global') ? 'Global' : item.scope,
-          referenceDate: date(item.observed_on),
-          kind: kind(item.kind),
-          status: 'available'
-        }
-      : missing(id, label, 'data-not-found', `No verified ${label.toLowerCase()} observation is recorded.`);
-  };
-  const observation = (
-    id: string,
-    label: string,
-    reference: Reference | undefined,
-    reason: string
-  ): DashboardMetricCard => {
-    const item = reference ? observations.get(reference.observation_ids[0]) : undefined;
-    return item
-      ? {
-          id,
-          label,
-          value: item.display_value,
-          secondaryValue: item.detail,
-          source: item.source_id,
-          sourceUrl: item.source_url,
-          geography: item.geography,
-          referenceDate: item.reference_period,
-          kind: 'Reported',
-          status: 'available'
-        }
-      : missing(id, label, 'data-not-found', reason);
-  };
-  const players = metrics.get('global_players'),
-    spenders = metrics.get('global_spenders');
-
-  const payingShare: DashboardMetricCard = players && spenders && players.value > 0
-    ? {
-        id: 'paying_player_share',
-        label: 'Paying-player share',
-        value: `${((spenders.value/players.value)*100).toFixed(1)}%`,
-        secondaryValue: `${spenders.display_value} spenders / ${players.display_value} players`,
-        source: `Derived from ${players.source}`,
-        sourceUrl: players.source_url,
-        geography: 'Global',
-        referenceDate: date(players.observed_on),
-        kind: 'Derived',
-        status: 'available'
+  return DASHBOARD_SECTIONS.map(section => ({
+    ...section,
+    metrics: section.metrics.map(slot => {
+      if ('reference' in slot) {
+        const reference = data.talent_pipeline?.[slot.reference];
+        const item = reference ? observations.get(reference.observation_ids[0]) : undefined;
+        if (item) return {
+          id: slot.id, label: slot.label, value: item.display_value, secondaryValue: item.detail,
+          source: sources.get(item.source_id) ?? item.publisher, sourceUrl: item.source_url,
+          geography: item.geography, referenceDate: item.reference_period,
+          kind: kind(item.measurement_type ?? (item.transformation ? 'Derived' : 'Reported')),
+          status: 'available' as const, carriedForward: item.carried_forward
+        };
+      } else {
+        const item = metrics.get(slot.id);
+        if (item) return {
+          id: slot.id, label: slot.label, value: item.display_value, secondaryValue: item.detail,
+          source: item.source, sourceUrl: item.source_url, geography: item.scope,
+          referenceDate: date(item.observed_on), kind: kind(item.kind),
+          status: 'available' as const, carriedForward: item.carried_forward
+        };
       }
-    : missing(
-        'paying_player_share',
-        'Paying-player share',
-        'data-not-found',
-        'Global player and spender observations are both required.'
-      );
-
-  const studios = metrics.get('tracked_studios'),
-    entry = metrics.get('entry_level_roles'),
-    talent = data.talent_pipeline;
-
-  return [
-    {
-      id: 'worldwide-market',
-      title: 'Worldwide players & market',
-      description: 'Global market forecasts and the relationship between the estimated player and spender populations.',
-      metrics: [
-        metric('global_games_revenue', 'Global games revenue'),
-        metric('global_players', 'Global players'),
-        metric('global_spenders', 'Global spenders'),
-        payingShare
-      ]
-    },
-    {
-      id: 'employment-conditions',
-      title: 'Employment conditions',
-      description: 'DevQuest tracked vacancies and ASGC tracked layoff announcements. Neither dataset is a census of the global games workforce.',
-      metrics: [
-        metric('open_roles', 'Open positions', studios ? `Across ${studios.display_value} studios` : undefined),
-        metric('entry_level_role_share', 'Entry-level share', entry ? `${entry.display_value} positions` : undefined),
-        metric('hiring_concentration_top_20', 'Hiring concentration'),
-        metric('confirmed_layoffs_2026', 'Tracked 2026 layoffs')
-      ]
-    },
-    {
-      id: 'talent-flow',
-      title: 'Talent pipeline & workforce flow',
-      description: 'Verified game-specific education and identified-games-workforce flows only. Missing values remain visible rather than being estimated.',
-      metrics: [
-        observation(
-          'game_specific_graduates',
-          'Game-specific graduates',
-          talent?.graduate_supply,
-          'No verified game-specific graduate observation is recorded.'
-        ),
-        observation(
-          'workers_entering_games',
-          'Workers entering games',
-          talent?.workforce_flow?.industry_inflow,
-          'No verified identified-games-workforce inflow observation is recorded.'
-        ),
-        observation(
-          'workers_leaving_games',
-          'Workers leaving games',
-          talent?.workforce_flow?.industry_outflow,
-          'No verified identified-games-workforce outflow observation is recorded.'
-        ),
-        talent?.graduate_to_entry_opportunity_ratio
-          ? observation(
-              'graduate_entry_ratio',
-              'Graduate-to-entry-opportunity ratio',
-              talent.graduate_to_entry_opportunity_ratio,
-              'No matching flow observation is recorded.'
-            )
-          : missing(
-              'graduate_entry_ratio',
-              'Graduate-to-entry-opportunity ratio',
-              'baseline-not-established',
-              'Requires matching trailing-12-month graduate and unique entry-level opportunity flows.'
-            )
-      ]
-    }
-  ];
+      return {
+        id: slot.id, label: slot.label, value: 'N/A', secondaryValue: 'Data not found',
+        source: 'No verified observation', geography: 'Not established', referenceDate: 'Not established',
+        kind: 'Reported' as const, status: 'data-not-found' as const,
+        missingReason: `No verified ${slot.label.toLowerCase()} observation is recorded.`
+      };
+    })
+  }));
 }

@@ -2,12 +2,12 @@ import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { NEWS_SOURCE_CATEGORIES } from '../src/data/newsSources.ts';
 import { SNAPSHOT_INDICATORS } from '../src/data/snapshotIndicators.ts';
 import { STATISTICAL_SOURCES } from '../src/data/statisticalSources.ts';
-import { TALENT_SNAPSHOT_INDICATORS } from '../src/data/talentIndicators.ts';
+import { TALENT_SNAPSHOT_INDICATORS, graduateEntryMedian } from '../src/data/talentIndicators.ts';
 import { DASHBOARD_METRIC_IDS } from '../src/data/dashboardMetrics.ts';
 import { REPORT_MODEL_CONFIG } from '../src/data/reportConfig.ts';
 import {
   CATEGORY_LIMITS, RETENTION_DAYS, dayDifference,
-  hostnameMatches, latestReport, reportWindow
+  hostnameMatches, sourceUrlMatches, latestReport, reportWindow
 } from './report-lib.mjs';
 
 export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAIClient(), previousReport, recordCollection = async () => {}) {
@@ -73,7 +73,7 @@ export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAI
       label: { type: 'string' }, value: { type: 'number' }, display_value: { type: 'string' },
       detail: { type: 'string' }, scope: { type: 'string' }, unit: { type: ['string', 'null'] },
       category: { type: 'string', enum: ['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products'] },
-      kind: { type: 'string', enum: ['Reported', 'Forecast', 'Estimate'] },
+      kind: { type: 'string', enum: ['Reported', 'Forecast', 'Estimate', 'Survey'] },
       observed_on: { type: 'string' }, period_start: { type: ['string', 'null'] },
       period_end: { type: ['string', 'null'] }, published_on: { type: 'string' },
       source: { type: 'string' }, origin: { type: ['string', 'null'] },
@@ -93,13 +93,15 @@ export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAI
       geography: { type: 'string' }, reference_period: { type: 'string' }, observed_on: { type: 'string' },
       release_date: { type: ['string', 'null'] }, revision_status: { type: 'string', enum: ['provisional', 'revised', 'final', 'unknown'] },
       classification_system: { type: ['string', 'null'] }, classification_version: { type: ['string', 'null'] }, classification_code: { type: ['string', 'null'] },
-      measure: { type: 'string', enum: ['game_program_entrants', 'annual_game_specific_graduates', 'workforce_contraction', 'industry_inflow', 'industry_outflow'] },
+      measure: { type: 'string', enum: TALENT_SNAPSHOT_INDICATORS.map(indicator => indicator.measure) },
+      measurement_type: { type: 'string', enum: ['Reported', 'Survey', 'Derived'] },
+      inputs: { type: ['array', 'null'], items: { type: 'object', additionalProperties: false, properties: { label: { type: 'string' }, value: { type: 'number' } }, required: ['label', 'value'] } },
       original_unit: { type: 'string' }, original_value: { type: 'number' },
       query_or_filters: { type: ['string', 'null'] }, transformation: { type: ['string', 'null'] }, derived_value: { type: ['number', 'null'] },
       precision_class: { type: 'string', enum: ['game-specific', 'identified-games-workforce'] },
       coverage_notes: { type: 'string' }, evidence_excerpt: { type: 'string' }, raw_file_hash: { type: ['string', 'null'] }
     },
-    required: ['id','label','display_value','detail','source_id','publisher','dataset_name','dataset_id','table_id','source_url','geography','reference_period','observed_on','release_date','revision_status','classification_system','classification_version','classification_code','measure','original_unit','original_value','query_or_filters','transformation','derived_value','precision_class','coverage_notes','evidence_excerpt','raw_file_hash']
+    required: ['id','label','display_value','detail','source_id','publisher','dataset_name','dataset_id','table_id','source_url','geography','reference_period','observed_on','release_date','revision_status','classification_system','classification_version','classification_code','measure','measurement_type','inputs','original_unit','original_value','query_or_filters','transformation','derived_value','precision_class','coverage_notes','evidence_excerpt','raw_file_hash']
   };
 
   const monthlyReportSchema = {
@@ -121,12 +123,13 @@ export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAI
     }))
   }));
   const statisticalSources = STATISTICAL_SOURCES
-    .filter((source) => source.active && ['education-pipeline', 'workforce-flow', 'industry-workforce'].includes(source.category))
+    .filter((source) => source.active && ['education-pipeline', 'graduate-outcomes', 'workforce-flow', 'industry-workforce'].includes(source.category))
     .map((source) => ({
       id: source.id,
       name: source.name,
       publisher: source.publisher,
       canonical_url: source.url,
+      evidence_urls: source.evidenceUrls,
       geography: source.geography,
       classification_system: source.classificationSystem,
       role: source.role,
@@ -152,8 +155,14 @@ export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAI
   TALENT OBSERVATIONS
   In the same report, find the latest official observation available on or before ${window.periodEnd} for game_program_entrants, annual_game_specific_graduates, workforce_contraction, industry_inflow and industry_outflow. Education results require an official programme or classification explicitly naming games or game development and precision_class game-specific. Never include adjacent computer science, animation, VFX, interactive media or art programmes. Workforce results require precision_class identified-games-workforce. Never substitute broader sectors, layoffs, employer separations, intent-to-leave sentiment or general labour proxies. Return unavailable measures as no observation. Do not combine countries, sources or classifications. Preserve the original value, unit, period, release, classification and filters. source_url must be official, evidence_excerpt must contain the value in at most 25 words, and raw_file_hash must be null.
 
+  CAREER OUTCOMES
+  Also collect the latest scoped career indicators available by ${window.periodEnd}: graduate_entry_by_graduation, career_switching_share and post_layoff_joblessness_share. These are distinct from measured industry inflow/outflow. Use the registered Princeton Review, InGame Job / Values Value and GDC reports, including their registered primary-authored PDF mirrors. Label surveys as Survey. For graduate_entry_by_graduation return Derived, all numeric institution-labelled undergraduate programme rates as inputs, exclude NR and postgraduate programmes, and describe an unweighted programme median; the code computes the result. Never present it as a global or student-weighted placement rate. Career switching retains the source's field/industry wording and original question population; disclose an undisclosed response count, never relabel it as an industry exit rate. GDC joblessness applies only to respondents laid off in the preceding 24 months, not to all workers. Do not multiply a survey rate by tracked layoffs or vacancies to manufacture a surplus headcount. Annual observations retain their original reference year and publication date. Employer layoff exposure is a Survey metric gdc_employers_with_layoffs and describes respondents, not a percentage of employers. Refresh the US and European market cards with their original measurement definitions; do not add incompatible player populations or currencies.
+
   Retained observations:
   ${JSON.stringify(retained)}
+
+  Retained education and career benchmarks (refresh only with compatible evidence):
+  ${JSON.stringify(previous.data.statistical_observations ?? [])}
 
   Registered news sources:
   ${JSON.stringify(newsSources)}
@@ -186,17 +195,26 @@ export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAI
   const statisticalCollected = [];
   for (const observation of generated.statistical_observations) {
     const source = STATISTICAL_SOURCES.find((candidate) => candidate.id === observation.source_id);
-    if (!source || !hostnameMatches(observation.source_url, source.url)) continue;
+    if (!source || !sourceUrlMatches(observation.source_url, { canonical_url: source.url, evidence_urls: source.evidenceUrls })) continue;
     if (observation.release_date && observation.release_date > window.periodEnd) continue;
     if (observation.observed_on > window.periodEnd) continue;
     if (observation.evidence_excerpt.trim().split(/\s+/).length > 25) continue;
     const indicator = TALENT_SNAPSHOT_INDICATORS.find((candidate) => candidate.measure === observation.measure);
     if (!indicator || indicator.precision !== observation.precision_class) continue;
+    if (['career_switching_share', 'post_layoff_joblessness_share'].includes(observation.measure)
+      && (observation.measurement_type !== 'Survey' || observation.original_value < 0 || observation.original_value > 100)) continue;
+    if (observation.measure === 'graduate_entry_by_graduation') {
+      if (!observation.inputs?.length || !observation.transformation || observation.measurement_type !== 'Derived') continue;
+      const value = graduateEntryMedian(observation.inputs);
+      observation.original_value = value;
+      observation.derived_value = value;
+      observation.display_value = `${value}%`;
+    }
     statisticalCollected.push({
       ...Object.fromEntries(Object.entries(observation).filter(([, value]) => value !== null)),
       publisher: source.publisher,
       retrieved_at: reportDate,
-      methodology_version: 'talent-v1',
+      methodology_version: 'talent-v2',
       carried_forward: false
     });
   }
@@ -239,17 +257,13 @@ export async function collectMonthlyEvidence(reportDate, client = pipelineOpenAI
     return [indicator.key, observation];
   }));
   const talentPipeline = {};
-  const entrants = selectedTalent.get('entrants');
-  const graduates = selectedTalent.get('graduate_supply');
-  if (entrants) talentPipeline.entrants = { observation_ids: [entrants.id] };
-  if (graduates) talentPipeline.graduate_supply = { observation_ids: [graduates.id] };
   const workforceFlow = {};
-  const contraction = selectedTalent.get('workforce_contraction');
-  const inflow = selectedTalent.get('industry_inflow');
-  const outflow = selectedTalent.get('industry_outflow');
-  if (contraction) workforceFlow.workforce_contraction = { observation_ids: [contraction.id] };
-  if (inflow) workforceFlow.industry_inflow = { observation_ids: [inflow.id] };
-  if (outflow) workforceFlow.industry_outflow = { observation_ids: [outflow.id] };
+  for (const indicator of TALENT_SNAPSHOT_INDICATORS) {
+    const observation = selectedTalent.get(indicator.key);
+    if (!observation) continue;
+    const target = ['workforce_contraction', 'industry_inflow', 'industry_outflow'].includes(indicator.key) ? workforceFlow : talentPipeline;
+    target[indicator.key] = { observation_ids: [observation.id] };
+  }
   if (Object.keys(workforceFlow).length) talentPipeline.workforce_flow = workforceFlow;
 
   const categoryOrder = Object.keys(CATEGORY_LIMITS);

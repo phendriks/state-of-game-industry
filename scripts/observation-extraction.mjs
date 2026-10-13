@@ -1,5 +1,5 @@
 import { observationSchemaV1 } from '../src/data/evidence/schema-v1.ts';
-import { hostnameMatches } from './report-lib.mjs';
+import { sourceUrlMatches } from './report-lib.mjs';
 import { readRunManifest, RUNS_DIR, writeRunStage } from './run-workspace.mjs';
 import { readSourceDiscovery } from './source-acquisition.mjs';
 
@@ -19,7 +19,7 @@ export async function validateAndStoreAtomicObservations(runId, records, root = 
     const source = allowedSources.get(observation.source_id);
     if (!source) throw new Error(`Observation ${observation.observation_id} uses an unaccepted source: ${observation.source_id}`);
     if (observation.underlying_source_id && !allowedSources.has(observation.underlying_source_id)) throw new Error(`Observation ${observation.observation_id} names an unknown underlying source: ${observation.underlying_source_id}`);
-    if (!hostnameMatches(observation.source_url, source.canonical_url)) throw new Error(`Observation ${observation.observation_id} URL does not match its registered or accepted source.`);
+    if (!sourceUrlMatches(observation.source_url, source)) throw new Error(`Observation ${observation.observation_id} URL does not match its registered or accepted source.`);
     if (observation.evidence_class === 'window' && (observation.observed_at.slice(0, 10) < discovery.acquisition_window.start || observation.observed_at.slice(0, 10) > discovery.acquisition_window.end)) {
       throw new Error(`Observation ${observation.observation_id} is outside the acquisition window but labelled window evidence.`);
     }

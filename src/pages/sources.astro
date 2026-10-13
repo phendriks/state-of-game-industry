@@ -8,9 +8,9 @@ const sourceCount=NEWS_SOURCES.length+STATISTICAL_SOURCES.filter(source=>source.
 <BaseLayout title="Sources · Game Industry Observatory">
   <section class="hero compact">
     <p class="eyebrow">Evidence base</p><h1>Source registry</h1>
-    <p class="lede">These {sourceCount} monitored and statistical sources form the canonical evidence base. Inclusion means a source is available to the workflow—not that every claim it makes is accepted.</p>
+    <p class="lede">{sourceCount} sources monitored. Each claim is checked separately.</p>
     <a class="button" href={`${import.meta.env.BASE_URL}submit-source/`}>Propose a source</a>
   </section>
   <EvidenceBase />
-  <section class="panel registry-note"><div><p class="eyebrow">How this stays transparent</p><h2>One public list, reviewed changes</h2></div><p>Contributors propose edits to the canonical registries through a pull request. The repository owner reviews every proposal before merging it. Source type, language and affiliation provide context only. They are not quality scores.</p></section>
+  <section class="panel registry-note"><div><p class="eyebrow">Contributions</p><h2>Reviewed source changes</h2></div><p>Suggest changes by pull request. The owner reviews them before merging. Source labels describe context, not quality.</p></section>
 </BaseLayout>

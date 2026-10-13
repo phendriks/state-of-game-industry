@@ -9,4 +9,5 @@ const provenance = metric.status === 'available' ? metric.kind : 'Unavailable';
   <strong>{metric.value}</strong>
   {metric.secondaryValue&&<span>{metric.secondaryValue}</span>}
   <small>{provenance} · {metric.sourceUrl?<a href={metric.sourceUrl}>{metric.source}</a>:metric.source}</small>
+  {metric.status === 'available' && <small>{metric.geography} · {metric.referenceDate}{metric.carriedForward && ' · Carried forward'}</small>}
 </article>

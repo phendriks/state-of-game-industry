@@ -5,6 +5,7 @@ import { REPORT_METRIC_CATEGORIES } from './data/reportMetrics';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from './data/snapshotIndicators';
 import { STATISTICAL_OBSERVATION_PRECISION_CLASSES } from './data/statisticalFramework';
 import { STATISTICAL_SOURCES } from './data/statisticalSources';
+import { TALENT_SNAPSHOT_INDICATORS, graduateEntryMedian } from './data/talentIndicators';
 
 const registeredSourceNames = new Set(NEWS_SOURCES.map((source) => source.name));
 const registeredStatisticalSourceIds = new Set(STATISTICAL_SOURCES.map((source) => source.id));
@@ -22,7 +23,7 @@ const metricSchema = z.object({
   scope: z.string().trim().min(1),
   unit: z.string().trim().min(1).optional(),
   category: z.enum(REPORT_METRIC_CATEGORIES),
-  kind: z.enum(['Reported', 'Calculated', 'Forecast', 'Estimate']),
+  kind: z.enum(['Reported', 'Calculated', 'Forecast', 'Estimate', 'Survey']),
   observed_on: z.coerce.date(),
   period_start: z.coerce.date().optional(),
   period_end: z.coerce.date().optional(),
@@ -95,6 +96,8 @@ const statisticalObservationSchema = z.object({
   reference_period: z.string().trim().min(1),
   observed_on: z.coerce.date(),
   release_date: z.coerce.date().optional(),
+  period_start: z.coerce.date().optional(),
+  period_end: z.coerce.date().optional(),
   retrieved_at: z.coerce.date(),
   revision_status: z.enum(['provisional', 'revised', 'final', 'unknown']),
   classification_system: z.string().trim().min(1).optional(),
@@ -106,12 +109,31 @@ const statisticalObservationSchema = z.object({
   query_or_filters: z.string().trim().min(1).optional(),
   transformation: z.string().trim().min(1).optional(),
   derived_value: z.number().optional(),
+  measurement_type: z.enum(['Reported', 'Survey', 'Derived']).optional(),
+  inputs: z.array(z.object({ label: z.string().trim().min(1), value: z.number() })).min(1).optional(),
   methodology_version: z.string().trim().min(1),
   precision_class: z.enum(STATISTICAL_OBSERVATION_PRECISION_CLASSES),
   coverage_notes: z.string().trim().min(1),
   evidence_excerpt: z.string().trim().min(1),
   carried_forward: z.boolean().default(false),
   raw_file_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/).optional()
+}).superRefine((observation, context) => {
+  if (['career_switching_share', 'post_layoff_joblessness_share'].includes(observation.measure)
+    && (observation.measurement_type !== 'Survey' || typeof observation.original_value !== 'number' || observation.original_value < 0 || observation.original_value > 100)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: 'Career percentages require Survey type and a numeric percentage between 0 and 100.' });
+  }
+  if (observation.measure !== 'graduate_entry_by_graduation') return;
+  if (!observation.inputs || !observation.transformation || observation.measurement_type !== 'Derived') {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: 'Graduate entry median requires stored programme inputs, transformation and Derived type.' });
+    return;
+  }
+  try {
+    if (graduateEntryMedian(observation.inputs) !== (observation.derived_value ?? observation.original_value)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: 'Graduate entry median does not match its stored programme rates.' });
+    }
+  } catch (error) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: String(error) });
+  }
 });
 
 const statisticalMetricReferenceSchema = z.object({
@@ -121,6 +143,9 @@ const statisticalMetricReferenceSchema = z.object({
 
 const talentPipelineSchema = z.object({
   graduate_supply: statisticalMetricReferenceSchema.optional(),
+  graduate_entry: statisticalMetricReferenceSchema.optional(),
+  career_switching: statisticalMetricReferenceSchema.optional(),
+  post_layoff_joblessness: statisticalMetricReferenceSchema.optional(),
   entrants: statisticalMetricReferenceSchema.optional(),
   enrollment: statisticalMetricReferenceSchema.optional(),
   entry_level_opportunities: statisticalMetricReferenceSchema.optional(),
@@ -224,6 +249,9 @@ const reportSchema = z.object({
     const observationIds = new Set((report.statistical_observations ?? []).map((observation) => observation.id));
     const pipelineReferences = [
       report.talent_pipeline.graduate_supply,
+      report.talent_pipeline.graduate_entry,
+      report.talent_pipeline.career_switching,
+      report.talent_pipeline.post_layoff_joblessness,
       report.talent_pipeline.entrants,
       report.talent_pipeline.enrollment,
       report.talent_pipeline.entry_level_opportunities,
@@ -239,6 +267,21 @@ const reportSchema = z.object({
             path: ['talent_pipeline'],
             message: `Talent pipeline reference must match a statistical observation in this report: ${observationId}`
           });
+        }
+      }
+    }
+  }
+
+  if (report.talent_pipeline) {
+    for (const indicator of TALENT_SNAPSHOT_INDICATORS) {
+      const reference = indicator.key in report.talent_pipeline
+        ? report.talent_pipeline[indicator.key as keyof typeof report.talent_pipeline]
+        : report.talent_pipeline.workforce_flow?.[indicator.key as keyof NonNullable<typeof report.talent_pipeline.workforce_flow>];
+      if (!reference || !('observation_ids' in reference)) continue;
+      for (const id of reference.observation_ids) {
+        const observation = report.statistical_observations?.find(item => item.id === id);
+        if (observation && (observation.measure !== indicator.measure || observation.precision_class !== indicator.precision)) {
+          context.addIssue({ code: z.ZodIssueCode.custom, path: ['talent_pipeline'], message: `${indicator.label} references an incompatible measure or population: ${id}` });
         }
       }
     }

@@ -33,20 +33,21 @@ const metricRows = [...rows.values()].sort((a, b) =>
   <section class="hero compact">
     <p class="eyebrow">Longitudinal evidence</p>
     <h1>Data history</h1>
-    <p class="lede">Source-level figures stored with each report. Values are kept separate and compared over time—there is no composite score or synthetic baseline.</p>
+    <p class="lede">Compare source figures across reports. No combined industry score.</p>
   </section>
 
   <section class="data-key" aria-label="Data classifications">
-    <div><strong>Reported</strong><span>A figure published or directly counted by the named source.</span></div>
-    <div><strong>Calculated</strong><span>A transparent arithmetic result stored with its formula and inputs.</span></div>
-    <div><strong>Forecast</strong><span>A source's forward-looking projection, clearly separated from reported results.</span></div>
-    <div><strong>Estimate</strong><span>A third-party estimate rather than an official disclosure.</span></div>
+    <div><strong>Reported</strong><span>Published or counted by the source.</span></div>
+    <div><strong>Calculated</strong><span>Formula and inputs stored.</span></div>
+    <div><strong>Forecast</strong><span>A projection.</span></div>
+    <div><strong>Estimate</strong><span>A modelled figure.</span></div>
+    <div><strong>Survey</strong><span>Applies to the survey population.</span></div>
   </section>
 
   <section class="panel data-panel">
     <div class="data-heading">
       <div><p class="eyebrow">Tracked metrics</p><h2>{metricRows.length} series</h2></div>
-      <p>Each dated column is sourced from its corresponding report. “Observed” records when the underlying figure applied, which may differ from the report date.</p>
+      <p>Columns show report dates. “Observed” is the date the figure applies to.</p>
     </div>
     <div class="data-table-wrap">
       <table class="data-table">

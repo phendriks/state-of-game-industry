@@ -131,7 +131,7 @@ try {
   const indexedDashboard = await buildDashboardArtifact(runId, root);
   assert.equal(indexedDashboard.fixed.find((card) => card.id === 'global_players').value, 200);
   assert.equal(indexedDashboard.finding_specific[0].value, 111);
-  assert.equal(indexedDashboard.fixed.find((card) => card.id === 'industry_inflow').value, null);
+  assert.equal(indexedDashboard.fixed.find((card) => card.id === 'graduate_entry_by_graduation').value, null);
   await assert.rejects(validateCompleteRun(runId, root), /duplicate observation lookup-duplicate/);
 
   await writeRunStage(runId, 'selected-findings', [{ ...selected[0], observation_ids: ['missing-observation'] }], root);

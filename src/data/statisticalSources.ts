@@ -26,6 +26,7 @@ export type StatisticalSource = {
   name: string;
   publisher: string;
   url: string;
+  evidenceUrls?: string[];
   geography: string;
   category: typeof STATISTICAL_SOURCE_CATEGORIES[number];
   sourceType: typeof STATISTICAL_SOURCE_TYPES[number];
@@ -40,6 +41,50 @@ export type StatisticalSource = {
 // Canonical registry for statistical and administrative datasets. These sources
 // are deliberately separate from the news-source registry used by report collection.
 export const STATISTICAL_SOURCES: StatisticalSource[] = [
+  {
+    id: 'princeton-game-design-outcomes',
+    name: 'Princeton Review game-design graduate outcomes',
+    publisher: 'The Princeton Review',
+    url: 'https://www.princetonreview.com/college-rankings/game-design',
+    geography: 'Selected institutions in the United States and abroad',
+    category: 'graduate-outcomes',
+    sourceType: 'sector-survey',
+    frequency: 'Annual',
+    gamesPrecision: 'game-specific',
+    role: 'Institution-reported graduate entry into game development by graduation; undergraduate and postgraduate results remain separate.',
+    limitations: 'Ranked institutions are a selected sample. Programme medians are unweighted, exclude missing rates and are not global student placement rates. Methodology: https://www.princetonreview.com/college-rankings/game-design/methodology',
+    active: true
+  },
+  {
+    id: 'ingamejob-valuesvalue-employment',
+    name: 'Big Games Industry Employment Survey',
+    publisher: 'InGame Job and Values Value',
+    url: 'https://ingamejob.com/en/games-industry-employment-survey/2025',
+    evidenceUrls: ['https://investgame.net/wp-content/uploads/2025/11/Big_Games_Industry_Employment_Survey_2025.pdf'],
+    geography: 'Europe; preserve each edition and question population',
+    category: 'workforce-flow',
+    sourceType: 'sector-survey',
+    frequency: 'Annual',
+    gamesPrecision: 'game-specific',
+    role: 'Surveyed career changes, job searches, compensation and employment conditions.',
+    limitations: 'Primary-authored report hosted by InvestGame; publisher release: https://boost.ingamejob.com/the-results-of-the-big-games-industry-employment-survey-2025-are-out/. The 2025 field/industry change question does not disclose its response count; it cannot establish a worldwide industry exit rate or current-year exit headcount.',
+    active: true
+  },
+  {
+    id: 'gdc-career-outcomes',
+    name: 'GDC State of the Game Industry career outcomes',
+    publisher: 'GDC',
+    url: 'https://gdconf.com/article/gdc-2026-state-of-the-game-industry-reveals-impact-of-layoffs-generative-ai-and-more/',
+    evidenceUrls: ['https://investgame.net/wp-content/uploads/2026/01/2026-01-29-dec052f4_d88e_48ce_9f83_a18ce2f2a6e5_541400_GDC26_PDF_SOTI_Report.pdf'],
+    geography: 'International survey respondents; not a workforce census',
+    category: 'industry-workforce',
+    sourceType: 'sector-survey',
+    frequency: 'Annual',
+    gamesPrecision: 'game-specific',
+    role: 'Employment outcomes among laid-off games professionals, with the original cohort and reference period.',
+    limitations: 'Primary-authored report hosted by InvestGame; publisher release: https://gdconf.com/article/gdc-2026-state-of-the-game-industry-reveals-impact-of-layoffs-generative-ai-and-more/. Joblessness among laid-off respondents is not a global surplus-worker count. Survey methodology changed in 2026; year-to-year comparisons require review.',
+    active: true
+  },
   {
     id: 'us-nces-ipeds',
     name: 'Integrated Postsecondary Education Data System (IPEDS)',

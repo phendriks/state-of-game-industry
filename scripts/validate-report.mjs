@@ -2,7 +2,8 @@ import path from 'node:path';
 import { NEWS_SOURCES } from '../src/data/newsSources.ts';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from '../src/data/snapshotIndicators.ts';
 import { STATISTICAL_SOURCES } from '../src/data/statisticalSources.ts';
-import { REPORTS_DIR, resolveReportDate, hostnameMatches, readReport, reportWindow } from './report-lib.mjs';
+import { TALENT_SNAPSHOT_INDICATORS, graduateEntryMedian } from '../src/data/talentIndicators.ts';
+import { REPORTS_DIR, resolveReportDate, sourceUrlMatches, readReport, reportWindow } from './report-lib.mjs';
 
 const requestedDate = process.argv.find((arg) => arg.startsWith('--report-date='))?.slice('--report-date='.length);
 const reportDate = resolveReportDate(requestedDate ?? process.env.REPORT_DATE);
@@ -36,7 +37,7 @@ for (const [index, observation] of statisticalObservations.entries()) {
   statisticalIds.add(observation.id);
   const source = statisticalSources.get(observation.source_id);
   if (!source) errors.push(`statistical observation ${index + 1} uses an unregistered source: ${observation.source_id}`);
-  if (source && !hostnameMatches(observation.source_url, source.url)) {
+  if (source && !sourceUrlMatches(observation.source_url, { canonical_url: source.url, evidence_urls: source.evidenceUrls })) {
     errors.push(`statistical observation ${observation.id} does not use its registered official source domain`);
   }
   if (!Number.isFinite(observation.original_value)) errors.push(`statistical observation ${observation.id} has no finite numeric value`);
@@ -51,22 +52,25 @@ for (const [index, observation] of statisticalObservations.entries()) {
   if (observation.evidence_excerpt?.trim().split(/\s+/).length > 25) {
     errors.push(`statistical observation ${observation.id} evidence excerpt exceeds 25 words`);
   }
+  if (observation.measure === 'graduate_entry_by_graduation') {
+    try {
+      if (observation.measurement_type !== 'Derived' || !observation.transformation || graduateEntryMedian(observation.inputs ?? []) !== (observation.derived_value ?? observation.original_value)) {
+        errors.push(`graduate entry observation ${observation.id} lacks a reproducible programme median`);
+      }
+    } catch (error) { errors.push(`graduate entry observation ${observation.id}: ${error.message}`); }
+  }
 }
 
 if (data.talent_pipeline) {
   const observationsById = new Map(statisticalObservations.map((observation) => [observation.id, observation]));
-  const references = [
-    ['game_program_entrants', data.talent_pipeline.entrants],
-    ['annual_game_specific_graduates', data.talent_pipeline.graduate_supply],
-    ['workforce_contraction', data.talent_pipeline.workforce_flow?.workforce_contraction],
-    ['industry_inflow', data.talent_pipeline.workforce_flow?.industry_inflow],
-    ['industry_outflow', data.talent_pipeline.workforce_flow?.industry_outflow]
-  ].filter(([, reference]) => Boolean(reference));
-  for (const [expectedMeasure, reference] of references) {
+  const references = TALENT_SNAPSHOT_INDICATORS.map(indicator => [indicator, data.talent_pipeline[indicator.key] ?? data.talent_pipeline.workforce_flow?.[indicator.key]])
+    .filter(([, reference]) => Boolean(reference));
+  for (const [indicator, reference] of references) {
     for (const observationId of reference.observation_ids ?? []) {
       if (!statisticalIds.has(observationId)) errors.push(`talent snapshot references missing observation ${observationId}`);
-      if (observationsById.get(observationId)?.measure !== expectedMeasure) {
-        errors.push(`talent snapshot ${expectedMeasure} references incompatible observation ${observationId}`);
+      const observation = observationsById.get(observationId);
+      if (observation?.measure !== indicator.measure || observation?.precision_class !== indicator.precision) {
+        errors.push(`talent snapshot ${indicator.measure} references incompatible observation ${observationId}`);
       }
     }
   }

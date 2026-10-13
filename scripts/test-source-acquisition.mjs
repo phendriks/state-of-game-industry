@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { initializeRunWorkspace } from './run-workspace.mjs';
 import { activeRegistrySources, addCandidateSource, createAcquisitionPlan, evaluateCandidateSource } from './source-acquisition.mjs';
+import { sourceUrlMatches } from './report-lib.mjs';
 
 const root = await fs.mkdtemp(path.join(os.tmpdir(), 'observatory-acquisition-'));
 const runId = 'run-2026-09-24';
@@ -16,6 +17,11 @@ try {
   assert.equal(plan.acquisition_window.days, 75);
   assert.equal(plan.registry_sources.length, registryCount);
   assert.equal(plan.registry_sources.every((source) => source.active), true);
+  const gdc = plan.registry_sources.find(source=>source.source_id==='stat-gdc-career-outcomes');
+  assert.equal(sourceUrlMatches(`${gdc.evidence_urls[0]}#page=13`,gdc),true);
+  assert.equal(sourceUrlMatches('https://gdconf.com/article/a-new-edition/',gdc),true);
+  assert.equal(sourceUrlMatches('https://investgame.net/unreviewed-report.pdf',gdc),false);
+  assert.equal(gdc.quality.official,false);
   await assert.rejects(() => createAcquisitionPlan(runId, 59, root), /between 60 and 90/);
   await addCandidateSource(runId, { candidateId: 'candidate-example', name: 'Candidate Example', publisher: 'Example Publisher', canonicalUrl: 'https://example.com/data', geography: 'Japan', neededFor: 'Regional consumer evidence', discoveredAt: '2026-09-20T10:00:00Z' }, root);
   const rejected = await evaluateCandidateSource(runId, 'candidate-example', { decision: 'rejected', reason: 'duplicate', note: 'Repeats an existing registry source.' }, root);
