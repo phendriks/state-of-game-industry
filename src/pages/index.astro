@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SnapshotOverview from '../components/SnapshotOverview.astro';
 import ReportDataTables from '../components/ReportDataTables.astro';
 import EvidenceBase from '../components/EvidenceBase.astro';
+import { buildDashboardReport } from '../data/dashboardReport';
 const allReports = (await getCollection('reports'))
   .sort((a: CollectionEntry<'reports'>,b: CollectionEntry<'reports'>) => b.data.published.getTime() - a.data.published.getTime());
 const reports = allReports
@@ -12,27 +13,7 @@ const reports = allReports
 const baseline = allReports.find((report: CollectionEntry<'reports'>)=>report.data.report_type==='year_to_date_baseline');
 const latest = reports[0];
 const { Content } = await render(latest);
-const latestObservationIds=new Set((latest.data.statistical_observations??[]).map(observation=>observation.id));
-const dashboardObservations=[
-  ...(latest.data.statistical_observations??[]),
-  ...(baseline?.data.statistical_observations??[]).filter(observation=>!latestObservationIds.has(observation.id))
-];
-const dashboardTalent=(latest.data.talent_pipeline||baseline?.data.talent_pipeline) ? {
-  ...(baseline?.data.talent_pipeline??{}),
-  ...(latest.data.talent_pipeline??{}),
-  workforce_flow:{
-    ...(baseline?.data.talent_pipeline?.workforce_flow??{}),
-    ...(latest.data.talent_pipeline?.workforce_flow??{})
-  }
-} : undefined;
-const dashboardReport={
-  ...latest,
-  data:{
-    ...latest.data,
-    statistical_observations:dashboardObservations,
-    talent_pipeline:dashboardTalent
-  }
-};
+const dashboardReport = buildDashboardReport(latest, baseline);
 type SignalMetric={id:string;label:string;display_value:string};
 const baselineMetrics=new Map<string,SignalMetric>(((baseline?.data.metrics??[]) as SignalMetric[]).map(metric=>[metric.id,metric]));
 const baselineSignals=(baseline?.data.baseline_findings??[]).map(finding=>({
