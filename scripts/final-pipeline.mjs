@@ -4,14 +4,14 @@ import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { REPORT_MODEL_CONFIG } from '../src/data/reportConfig.ts';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
 import { readReport, writeReport } from './report-lib.mjs';
-import { readJson, readJsonl } from './json-files.mjs';
+import { readJson, readJsonLines } from './json-files.mjs';
 
 const dir = (root, runId) => path.join(path.resolve(root), runId);
 const round = (value) => Number(value.toFixed(2));
 
 export async function calculateDeterministicMetrics(runId, root = RUNS_DIR) {
   const base = dir(root, runId);
-  const observations = await readJsonl(path.join(base, RUN_STAGE_FILES.normalized));
+  const observations = await readJsonLines(path.join(base, RUN_STAGE_FILES.normalized));
   const latest = (metric) => observations
     .filter((item) => item.metric === metric && typeof item.value === 'number')
     .sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0];
@@ -91,7 +91,7 @@ export async function calculateDeterministicMetrics(runId, root = RUNS_DIR) {
 }
 
 export async function selectFindings(runId, root = RUNS_DIR) {
-  const base = dir(root, runId); const findings = await readJson(path.join(base, RUN_STAGE_FILES['validated-findings'])); const observations = await readJsonl(path.join(base, RUN_STAGE_FILES.normalized));
+  const base = dir(root, runId); const findings = await readJson(path.join(base, RUN_STAGE_FILES['validated-findings'])); const observations = await readJsonLines(path.join(base, RUN_STAGE_FILES.normalized));
   const byId = new Map(observations.map((item)=>[item.observation_id,item]));
   const ranked = findings.map((finding) => { const evidence = finding.observation_ids.map((id)=>byId.get(id)).filter(Boolean); const independent = new Set(evidence.map((item)=>item.underlying_source_id??item.source_id)).size;
     const score_breakdown = { evidence_strength: Math.min(5,evidence.filter((item)=>['reported','observed'].includes(item.evidence_type)).length+1), source_independence: Math.min(5,independent), materiality: Math.min(5,finding.observation_ids.length+finding.metric_ids.length+1), relevance: 4, comparability: evidence.every((item)=>item.geography)?4:2, data_completeness: finding.status==='confirmed'?5:finding.status==='qualified'?4:3, novelty: finding.status==='resolved'?4:3 };
@@ -112,14 +112,14 @@ export async function compareAndCheck(runId, previousRunDirectory = null, root =
 }
 
 export async function buildDashboardArtifact(runId, root = RUNS_DIR) {
-  const base=dir(root,runId); const observations=await readJsonl(path.join(base,RUN_STAGE_FILES.normalized)); const derived=await readJson(path.join(base,RUN_STAGE_FILES['derived-metrics'])); const selected=await readJson(path.join(base,RUN_STAGE_FILES['selected-findings']));
+  const base=dir(root,runId); const observations=await readJsonLines(path.join(base,RUN_STAGE_FILES.normalized)); const derived=await readJson(path.join(base,RUN_STAGE_FILES['derived-metrics'])); const selected=await readJson(path.join(base,RUN_STAGE_FILES['selected-findings']));
   const fixedIds=['global_games_revenue','global_players','global_spenders','open_roles','entry_level_role_share','mid_level_role_share','new_roles_seven_days','confirmed_layoffs_2026','annual_game_specific_graduates','industry_inflow','industry_outflow']; const derivedById=new Map(derived.metrics.map((item)=>[item.id,item]));
   const fixed=fixedIds.map((id)=>{const metric=derivedById.get(id); if(metric)return{id,label:metric.label,value:metric.value,unit:metric.unit,status:'derived',metric_id:id,observation_ids:metric.input_observation_ids}; const observation=observations.filter((item)=>item.metric===id).sort((a,b)=>b.observed_at.localeCompare(a.observed_at))[0]; return observation?{id,label:id.replaceAll('_',' '),value:observation.value,unit:observation.unit,status:observation.evidence_type,observation_ids:[observation.observation_id]}:{id,label:id.replaceAll('_',' '),value:null,unit:null,status:'data not found',observation_ids:[]};});
   const used=new Set(fixed.flatMap((item)=>item.observation_ids)); const finding_specific=selected.flatMap((finding)=>finding.observation_ids.filter((id)=>!used.has(id)).slice(0,1).map((id)=>{const item=observations.find((observation)=>observation.observation_id===id); return item?{id:`finding-${finding.finding_id}`,label:finding.title,value:item.value,unit:item.unit,status:item.evidence_type,observation_ids:[id],finding_id:finding.finding_id}:null;})).filter(Boolean).slice(0,4);
   const dashboard={schema_version:'1.0.0',run_id:runId,fixed,finding_specific}; await writeRunStage(runId,'dashboard',dashboard,root); return dashboard;
 }
 
-export async function writeValidatedReport(runId, client=pipelineOpenAIClient(), root=RUNS_DIR){ const base=dir(root,runId); const manifest=await readRunManifest(runId,root); const selected=await readJson(path.join(base,RUN_STAGE_FILES['selected-findings'])); const observations=await readJsonl(path.join(base,RUN_STAGE_FILES.normalized)); const dashboard=await readJson(path.join(base,RUN_STAGE_FILES.dashboard)); const comparison=await readJson(path.join(base,RUN_STAGE_FILES.comparison)); const discovery=await readJson(path.join(base,RUN_STAGE_FILES['source-discovery']));
+export async function writeValidatedReport(runId, client=pipelineOpenAIClient(), root=RUNS_DIR){ const base=dir(root,runId); const manifest=await readRunManifest(runId,root); const selected=await readJson(path.join(base,RUN_STAGE_FILES['selected-findings'])); const observations=await readJsonLines(path.join(base,RUN_STAGE_FILES.normalized)); const dashboard=await readJson(path.join(base,RUN_STAGE_FILES.dashboard)); const comparison=await readJson(path.join(base,RUN_STAGE_FILES.comparison)); const discovery=await readJson(path.join(base,RUN_STAGE_FILES['source-discovery']));
   const collected=await readJson(path.join(base,'collected-report.json')).catch((error)=>{if(error.code==='ENOENT')return null;throw error;});
   const response=await client.responses.create({model:REPORT_MODEL_CONFIG.defaultModel,reasoning:{effort:REPORT_MODEL_CONFIG.reasoningEffort},input:`Write a readable Game Industry Observatory report using only this validated material. Begin with one industry summary using the length needed to explain the evidence without padding. Follow it with the surviving findings and a compact changes table when useful. Do not fabricate findings when none survived. Insert an HTML marker <!-- finding:ID --> before each selected finding. Use final_statement, not original_statement. Clearly label forecasts, estimates, source-specific geography and historical observations. Use only supplied numbers; never add new numerical claims. Do not repeat notes about AI, automation or the collection process.\nFindings:${JSON.stringify(selected)}\nObservations:${JSON.stringify(observations)}\nDashboard:${JSON.stringify(dashboard)}\nComparison:${JSON.stringify(comparison)}`});
   const body=response.output_text.trim(); const sourceNames=new Map([...discovery.registry_sources,...discovery.candidates.filter((item)=>item.decision==='accepted').map((item)=>({source_id:item.candidate_id,name:item.name}))].map((item)=>[item.source_id,item.name]));
@@ -129,7 +129,7 @@ export async function writeValidatedReport(runId, client=pipelineOpenAIClient(),
   const report=writeReport({...collected,report_type:'monthly_snapshot',title:'Game Industry Data Snapshot',published,period_start:manifest.window_start,period_end:manifest.window_end,ai_generated:true,human_reviewed:false,geographic_scope:collected?.geographic_scope??'Mixed source-specific geographies',global_representativeness:'limited',independently_audited:false,summary,metrics:collected?.metrics??metrics,evidence_run_id:runId,methodology_version:manifest.methodology_version},body);
   await writeRunStage(runId,'report',report,root); return report; }
 
-export async function validateCompleteRun(runId, root=RUNS_DIR){ const base=dir(root,runId); const manifest=await readRunManifest(runId,root); const observations=await readJsonl(path.join(base,RUN_STAGE_FILES.normalized)); const metrics=await readJson(path.join(base,RUN_STAGE_FILES['derived-metrics'])); const selected=await readJson(path.join(base,RUN_STAGE_FILES['selected-findings'])); const dashboard=await readJson(path.join(base,RUN_STAGE_FILES.dashboard)); const report=await fs.readFile(path.join(base,RUN_STAGE_FILES.report),'utf8'); const errors=[];
+export async function validateCompleteRun(runId, root=RUNS_DIR){ const base=dir(root,runId); const manifest=await readRunManifest(runId,root); const observations=await readJsonLines(path.join(base,RUN_STAGE_FILES.normalized)); const metrics=await readJson(path.join(base,RUN_STAGE_FILES['derived-metrics'])); const selected=await readJson(path.join(base,RUN_STAGE_FILES['selected-findings'])); const dashboard=await readJson(path.join(base,RUN_STAGE_FILES.dashboard)); const report=await fs.readFile(path.join(base,RUN_STAGE_FILES.report),'utf8'); const errors=[];
   const ids=new Set(); for(const item of observations){if(ids.has(item.observation_id))errors.push(`duplicate observation ${item.observation_id}`);ids.add(item.observation_id);if(!item.source_url||!item.geography)errors.push(`observation ${item.observation_id} lacks source or geography`);if(item.reference_period_end<item.reference_period_start)errors.push(`observation ${item.observation_id} has invalid period`);}
   for(const metric of metrics.metrics){const inputs=metric.input_observation_ids.map((id)=>observations.find((item)=>item.observation_id===id));if(inputs.some((item)=>!item))errors.push(`metric ${metric.id} has missing inputs`);if(metric.formula==='numerator / denominator * 100'&&round((metric.numerator/metric.denominator)*100)!==metric.value)errors.push(`metric ${metric.id} is not reproducible`);}
   const evidenceIds=new Set([...ids,...metrics.metrics.map((item)=>item.id)]); for(const card of [...dashboard.fixed,...dashboard.finding_specific]){if(card.value===0&&card.status==='data not found')errors.push(`dashboard ${card.id} converts missing to zero`);for(const id of [...(card.observation_ids??[]),...(card.metric_id?[card.metric_id]:[])])if(!evidenceIds.has(id))errors.push(`dashboard ${card.id} has missing evidence ${id}`);}

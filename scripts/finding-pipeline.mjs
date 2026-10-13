@@ -6,7 +6,7 @@ import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
 import { readSourceDiscovery } from './source-acquisition.mjs';
 import { hostnameMatches } from './report-lib.mjs';
-import { readJson, readJsonl } from './json-files.mjs';
+import { readJson, readJsonLines } from './json-files.mjs';
 
 const directory = (root, runId) => path.join(path.resolve(root), runId);
 
@@ -34,8 +34,8 @@ export async function generateCandidateFindings(runId, client = pipelineOpenAICl
   const manifest = await readRunManifest(runId, root);
   if (manifest.stages.normalized !== 'written' || manifest.stages['derived-metrics'] !== 'written') throw new Error('Candidate generation requires written normalized observations and derived metrics.');
   const base = directory(root, runId);
-  const observations = await readJsonl(path.join(base, RUN_STAGE_FILES.normalized));
-  const events = await readJsonl(path.join(base, RUN_STAGE_FILES.events));
+  const observations = await readJsonLines(path.join(base, RUN_STAGE_FILES.normalized));
+  const events = await readJsonLines(path.join(base, RUN_STAGE_FILES.events));
   const derived = await readJson(path.join(base, RUN_STAGE_FILES['derived-metrics']));
   if (!observations.length) {
     await writeRunStage(runId, 'candidate-findings', [], root);
@@ -65,8 +65,8 @@ export async function challengeCandidateFindings(runId, client = pipelineOpenAIC
     await writeRunStage(runId, 'rejected-findings', [], root);
     return { validated: [], rejected: [] };
   }
-  const observations = await readJsonl(path.join(base, RUN_STAGE_FILES.normalized));
-  const events = await readJsonl(path.join(base, RUN_STAGE_FILES.events));
+  const observations = await readJsonLines(path.join(base, RUN_STAGE_FILES.normalized));
+  const events = await readJsonLines(path.join(base, RUN_STAGE_FILES.events));
   const derived = await readJson(path.join(base, RUN_STAGE_FILES['derived-metrics']));
   const discovery = await readSourceDiscovery(runId, root);
   const approvedSources = [...discovery.registry_sources, ...discovery.candidates.filter((item) => item.decision === 'accepted').map((item) => ({ source_id: item.candidate_id, canonical_url: item.canonical_url }))];
