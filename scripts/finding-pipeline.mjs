@@ -6,9 +6,8 @@ import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
 import { readSourceDiscovery } from './source-acquisition.mjs';
 import { hostnameMatches } from './report-lib.mjs';
+import { readJson, readJsonl } from './json-files.mjs';
 
-const readJson = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
-const readJsonl = async (file) => (await fs.readFile(file, 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);
 const directory = (root, runId) => path.join(path.resolve(root), runId);
 
 const candidateApiSchema = { type: 'object', additionalProperties: false, properties: { candidates: { type: 'array', maxItems: 20, items: {
