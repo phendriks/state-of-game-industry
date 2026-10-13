@@ -1,35 +1,13 @@
 ---
 import { NEWS_SOURCES } from '../data/newsSources';
+import { REPORT_METRIC_CATEGORIES } from '../data/reportMetrics';
+import type { ReportMetric } from '../data/reportMetrics';
 
-type Metric = {
-  label: string;
-  display_value: string;
-  detail: string;
-  scope: string;
-  unit?: string;
-  category: 'Market' | 'Players' | 'Employment' | 'Business' | 'Corporate' | 'Products';
-  kind: 'Reported' | 'Calculated' | 'Forecast' | 'Estimate';
-  observed_on: Date;
-  period_start?: Date;
-  period_end?: Date;
-  published_on?: Date;
-  collected_on?: Date;
-  source: string;
-  source_url?: string;
-  evidence_excerpt?: string;
-  carried_forward?: boolean;
-  origin?: string;
-  source_relationship?: string;
-  calculation?: string;
-  inputs?: { label: string; display_value: string }[];
-};
-
-interface Props { report: { data: { metrics: Metric[] } } }
+interface Props { report: { data: { metrics: ReportMetric[] } } }
 
 const { report } = Astro.props;
 const sourceRecords = new Map(NEWS_SOURCES.map((source) => [source.name, source]));
-const categoryOrder: Metric['category'][] = ['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products'];
-const groups = categoryOrder
+const groups = REPORT_METRIC_CATEGORIES
   .map((category) => ({ category, metrics: report.data.metrics.filter((metric) => metric.category === category) }))
   .filter((group) => group.metrics.length > 0);
 ---

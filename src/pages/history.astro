@@ -2,41 +2,27 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NEWS_SOURCES } from '../data/newsSources';
-
-type Metric = {
-  id: string;
-  label: string;
-  display_value: string;
-  detail: string;
-  scope: string;
-  category: 'Market' | 'Players' | 'Employment' | 'Business' | 'Corporate' | 'Products';
-  kind: 'Reported' | 'Calculated' | 'Forecast' | 'Estimate';
-  observed_on: Date;
-  source: string;
-  origin?: string;
-  source_relationship?: string;
-  published_on?: Date;
-  collected_on?: Date;
-  calculation?: string;
-  inputs?: { label: string; display_value: string }[];
-};
+import { REPORT_METRIC_CATEGORIES } from '../data/reportMetrics';
+import type { ReportMetric } from '../data/reportMetrics';
 
 const reports = (await getCollection('reports')).sort(
   (a, b) => a.data.published.getTime() - b.data.published.getTime()
 );
 
-const rows = new Map<string, { metric: Metric; values: Map<string, Metric> }>();
+const rows = new Map<string, { metric: ReportMetric; values: Map<string, ReportMetric> }>();
 
 for (const report of reports) {
   for (const metric of report.data.metrics) {
-    const row = rows.get(metric.id) ?? { metric, values: new Map<string, Metric>() };
+    const row = rows.get(metric.id) ?? { metric, values: new Map<string, ReportMetric>() };
     row.metric = metric;
     row.values.set(report.id, metric);
     rows.set(metric.id, row);
   }
 }
 
-const categoryOrder = { Market: 0, Players: 1, Employment: 2, Business: 3, Corporate: 4, Products: 5 };
+const categoryOrder = Object.fromEntries(
+  REPORT_METRIC_CATEGORIES.map((category, index) => [category, index])
+);
 const sourceRecords = new Map(NEWS_SOURCES.map((source) => [source.name, source]));
 const metricRows = [...rows.values()].sort((a, b) =>
   categoryOrder[a.metric.category] - categoryOrder[b.metric.category]

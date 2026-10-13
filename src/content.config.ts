@@ -1,6 +1,7 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { NEWS_SOURCES } from './data/newsSources';
+import { REPORT_METRIC_CATEGORIES } from './data/reportMetrics';
 import { SNAPSHOT_INDICATORS, SNAPSHOT_INDICATOR_KEYS } from './data/snapshotIndicators';
 import { STATISTICAL_OBSERVATION_PRECISION_CLASSES } from './data/statisticalFramework';
 import { STATISTICAL_SOURCES } from './data/statisticalSources';
@@ -20,7 +21,7 @@ const metricSchema = z.object({
   detail: z.string(),
   scope: z.string().trim().min(1),
   unit: z.string().trim().min(1).optional(),
-  category: z.enum(['Market', 'Players', 'Employment', 'Business', 'Corporate', 'Products']),
+  category: z.enum(REPORT_METRIC_CATEGORIES),
   kind: z.enum(['Reported', 'Calculated', 'Forecast', 'Estimate']),
   observed_on: z.coerce.date(),
   period_start: z.coerce.date().optional(),
