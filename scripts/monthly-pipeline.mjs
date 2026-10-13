@@ -9,7 +9,7 @@ import { createAcquisitionPlan } from './source-acquisition.mjs';
 import { validateAndStoreAtomicObservations } from './observation-extraction.mjs';
 import { reconcileEventCandidates } from './reconciliation.mjs';
 import { generateCandidateFindings, challengeCandidateFindings } from './finding-pipeline.mjs';
-import { calculateDeterministicMetrics, selectFindings, compareAndCheck, buildDashboardArtifact, writeValidatedReport, validateCompleteRun } from './final-pipeline.mjs';
+import { calculateDeterministicMetrics, finalizeRun } from './final-pipeline.mjs';
 
 export async function generateMonthlyRun({ reportDate, runId = `report-${reportDate}`, sourceRegistryCommit = 'working-tree', previousRunDirectory = null },
   { root = RUNS_DIR, client, collect = collectMonthlyEvidence } = {}) {
@@ -29,11 +29,7 @@ export async function generateMonthlyRun({ reportDate, runId = `report-${reportD
     console.log(`${runId}: generating and challenging findings.`);
     await generateCandidateFindings(runId, api, root);
     await challengeCandidateFindings(runId, api, root);
-    await selectFindings(runId, root);
-    await compareAndCheck(runId, previousRunDirectory, root);
-    await buildDashboardArtifact(runId, root);
-    await writeValidatedReport(runId, api, root);
-    await validateCompleteRun(runId, root);
+    await finalizeRun(runId, { previousRunDirectory, client: api, root });
     console.log(`${runId}: validated; publication has not occurred.`);
     return { runId, directory, reportDate };
   } catch (error) {

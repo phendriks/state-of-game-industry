@@ -6,7 +6,7 @@ import { initializeRunWorkspace, writeRunStage } from './run-workspace.mjs';
 import { createAcquisitionPlan } from './source-acquisition.mjs';
 import { validateAndStoreAtomicObservations } from './observation-extraction.mjs';
 import { challengeCandidateFindings, generateCandidateFindings } from './finding-pipeline.mjs';
-import { buildDashboardArtifact, calculateDeterministicMetrics, compareAndCheck, selectFindings, validateCompleteRun, writeValidatedReport } from './final-pipeline.mjs';
+import { buildDashboardArtifact, calculateDeterministicMetrics, compareAndCheck, finalizeRun, selectFindings, validateCompleteRun, writeValidatedReport } from './final-pipeline.mjs';
 
 const root = await fs.mkdtemp(path.join(os.tmpdir(), 'observatory-findings-'));
 const runId = 'run-2026-09-24';
@@ -113,5 +113,29 @@ try {
   const report = `# Headline thesis\n\n${selected.map((finding) => `<!-- finding:${finding.finding_id} -->\n## ${finding.title}\n\n${finding.final_statement}`).join('\n\n')}\n\n## What changed\n\nNo previous run.\n\n<details><summary>Evidence / methodology</summary>Validated evidence only.</details>`;
   await writeValidatedReport(runId, fakeTextClient(report), root);
   assert.equal((await validateCompleteRun(runId, root)).status, 'passed');
+
+  await finalizeRun(runId, { root, client: fakeTextClient(report) });
+  const finalized = JSON.parse(await fs.readFile(path.join(root, runId, 'validation.json'), 'utf8'));
+  assert.equal(finalized.status, 'passed');
+
+  // Indexed lookups must preserve the first duplicate ID and stable timestamp ties.
+  const lookupObservations = [
+    { ...stored[0], observation_id: 'lookup-duplicate', value: 111 },
+    { ...stored[0], observation_id: 'lookup-duplicate', value: 222 },
+    { ...stored[0], observation_id: 'players-older', metric: 'global_players', value: 100, observed_at: '2026-09-10T00:00:00Z' },
+    { ...stored[0], observation_id: 'players-newer', metric: 'global_players', value: 200 },
+    { ...stored[0], observation_id: 'players-tied', metric: 'global_players', value: 300 }
+  ];
+  await writeRunStage(runId, 'normalized', lookupObservations, root);
+  await writeRunStage(runId, 'selected-findings', [{ ...selected[0], observation_ids: ['lookup-duplicate'] }], root);
+  const indexedDashboard = await buildDashboardArtifact(runId, root);
+  assert.equal(indexedDashboard.fixed.find((card) => card.id === 'global_players').value, 200);
+  assert.equal(indexedDashboard.finding_specific[0].value, 111);
+  assert.equal(indexedDashboard.fixed.find((card) => card.id === 'industry_inflow').value, null);
+  await assert.rejects(validateCompleteRun(runId, root), /duplicate observation lookup-duplicate/);
+
+  await writeRunStage(runId, 'selected-findings', [{ ...selected[0], observation_ids: ['missing-observation'] }], root);
+  const missingDashboard = await buildDashboardArtifact(runId, root);
+  assert.deepEqual(missingDashboard.finding_specific, []);
   console.log('Candidate generation and adversarial review tests passed.');
 } finally { await fs.rm(root, { recursive: true, force: true }); }
