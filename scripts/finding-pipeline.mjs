@@ -6,7 +6,7 @@ import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
 import { readSourceDiscovery } from './source-acquisition.mjs';
 import { hostnameMatches } from './report-lib.mjs';
-import { readJson, readJsonLines } from './json-files.mjs';
+import { readJson, readJsonLines } from './script-input.mjs';
 
 const directory = (root, runId) => path.join(path.resolve(root), runId);
 

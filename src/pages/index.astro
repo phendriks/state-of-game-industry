@@ -5,7 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SnapshotOverview from '../components/SnapshotOverview.astro';
 import ReportDataTables from '../components/ReportDataTables.astro';
 import EvidenceBase from '../components/EvidenceBase.astro';
-import { buildDashboardReport } from '../data/dashboardReport';
+import { buildDashboardReport } from '../data/dashboardMetrics';
 const allReports = (await getCollection('reports'))
   .sort((a: CollectionEntry<'reports'>,b: CollectionEntry<'reports'>) => b.data.published.getTime() - a.data.published.getTime());
 const reports = allReports

@@ -4,7 +4,7 @@ import { pipelineOpenAIClient } from './pipeline-openai.mjs';
 import { REPORT_MODEL_CONFIG } from '../src/data/reportConfig.ts';
 import { readRunManifest, RUNS_DIR, RUN_STAGE_FILES, writeRunStage } from './run-workspace.mjs';
 import { readReport, writeReport } from './report-lib.mjs';
-import { readJson, readJsonLines } from './json-files.mjs';
+import { readJson, readJsonLines } from './script-input.mjs';
 
 const dir = (root, runId) => path.join(path.resolve(root), runId);
 const round = (value) => Number(value.toFixed(2));

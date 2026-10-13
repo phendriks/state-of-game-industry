@@ -1,10 +1,10 @@
 import { initializeRunWorkspace } from './run-workspace.mjs';
+import { readArgument } from './script-input.mjs';
 
-const argument = (name) => process.argv.find((value) => value.startsWith(`--${name}=`))?.slice(name.length + 3);
-const runId = argument('run-id');
-const windowStart = argument('window-start');
-const windowEnd = argument('window-end');
-const sourceRegistryCommit = argument('source-registry-commit') ?? process.env.GITHUB_SHA ?? 'local-uncommitted';
+const runId = readArgument('run-id');
+const windowStart = readArgument('window-start');
+const windowEnd = readArgument('window-end');
+const sourceRegistryCommit = readArgument('source-registry-commit') ?? process.env.GITHUB_SHA ?? 'local-uncommitted';
 
 if (!runId || !windowStart || !windowEnd) {
   throw new Error('Usage: npm run report:run:init -- --run-id=<id> --window-start=YYYY-MM-DD --window-end=YYYY-MM-DD [--source-registry-commit=<sha>]');
