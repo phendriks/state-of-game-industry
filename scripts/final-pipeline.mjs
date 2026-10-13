@@ -11,30 +11,84 @@ const jsonl = async (file) => (await fs.readFile(file, 'utf8')).split(/\r?\n/).f
 const round = (value) => Number(value.toFixed(2));
 
 export async function calculateDeterministicMetrics(runId, root = RUNS_DIR) {
-  const base = dir(root, runId); const observations = await jsonl(path.join(base, RUN_STAGE_FILES.normalized));
-  const latest = (metric) => observations.filter((item) => item.metric === metric && typeof item.value === 'number').sort((a,b)=>b.observed_at.localeCompare(a.observed_at))[0];
+  const base = dir(root, runId);
+  const observations = await jsonl(path.join(base, RUN_STAGE_FILES.normalized));
+  const latest = (metric) => observations
+    .filter((item) => item.metric === metric && typeof item.value === 'number')
+    .sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0];
+
   const metrics = [];
   for (const [id, numeratorName, denominatorName, label] of [
-    ['entry_share','entry_level_roles','open_roles','Entry-level share'], ['mid_share','mid_level_roles','open_roles','Mid-level share']
+    ['entry_share', 'entry_level_roles', 'open_roles', 'Entry-level share'],
+    ['mid_share', 'mid_level_roles', 'open_roles', 'Mid-level share']
   ]) {
     const numerator = latest(numeratorName), denominator = latest(denominatorName);
-    if (numerator && denominator && denominator.value > 0 && numerator.source_id === denominator.source_id && numerator.unit === denominator.unit && numerator.geography === denominator.geography && numerator.reference_period_start === denominator.reference_period_start && numerator.reference_period_end === denominator.reference_period_end) {
-      metrics.push({ id, label, value: round((numerator.value / denominator.value) * 100), unit: 'percent', formula: 'numerator / denominator * 100',
-        numerator: numerator.value, denominator: denominator.value, input_observation_ids: [numerator.observation_id, denominator.observation_id], geography: numerator.geography,
-        reference_period_start: numerator.reference_period_start, reference_period_end: numerator.reference_period_end, evidence_type: 'derived' });
+    if (
+      numerator && denominator && denominator.value > 0
+      && numerator.source_id === denominator.source_id
+      && numerator.unit === denominator.unit
+      && numerator.geography === denominator.geography
+      && numerator.reference_period_start === denominator.reference_period_start
+      && numerator.reference_period_end === denominator.reference_period_end
+    ) {
+      metrics.push({
+        id,
+        label,
+        value: round((numerator.value / denominator.value) * 100),
+        unit: 'percent',
+        formula: 'numerator / denominator * 100',
+        numerator: numerator.value,
+        denominator: denominator.value,
+        input_observation_ids: [numerator.observation_id, denominator.observation_id],
+        geography: numerator.geography,
+        reference_period_start: numerator.reference_period_start,
+        reference_period_end: numerator.reference_period_end,
+        evidence_type: 'derived'
+      });
     }
   }
-  const forecasts = observations.filter((item) => ['games_revenue', 'global_games_revenue'].includes(item.metric) && item.evidence_type === 'forecast' && typeof item.value === 'number');
-  const groups = Map.groupBy(forecasts, (item) => `${item.unit}|${item.geography}|${item.reference_period_start}|${item.reference_period_end}`);
-  for (const [scope, values] of groups) if (values.length >= 2) {
-    const independent = [...new Map(values.map((item) => [item.underlying_source_id ?? item.source_id, item])).values()];
-    if (independent.length >= 2) { const sorted = independent.map((item) => item.value).sort((a,b)=>a-b); const mid = Math.floor(sorted.length/2); const median = sorted.length%2 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
-      metrics.push({ id: `forecast_consensus_${metrics.length+1}`, label: 'Compatible games-revenue forecast range', value: round(median), range: [sorted[0], sorted.at(-1)], unit: independent[0].unit,
-        formula: 'median and range of independent compatible forecasts', source_count: independent.length, input_observation_ids: independent.map((item)=>item.observation_id), scope, geography: independent[0].geography,
-        reference_period_start: independent[0].reference_period_start, reference_period_end: independent[0].reference_period_end, evidence_type: 'derived' }); }
-  }
+
+  const forecasts = observations.filter((item) =>
+    ['games_revenue', 'global_games_revenue'].includes(item.metric)
+    && item.evidence_type === 'forecast'
+    && typeof item.value === 'number'
+  );
+  const groups = Map.groupBy(
+    forecasts,
+    (item) => `${item.unit}|${item.geography}|${item.reference_period_start}|${item.reference_period_end}`
+  );
+
+  for (const [scope, values] of groups)
+    if (values.length >= 2) {
+      const independent = [
+        ...new Map(values.map((item) => [item.underlying_source_id ?? item.source_id, item])).values()
+      ];
+      if (independent.length >= 2) {
+        const sorted = independent.map((item) => item.value).sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+
+        metrics.push({
+          id: `forecast_consensus_${metrics.length+1}`,
+          label: 'Compatible games-revenue forecast range',
+          value: round(median),
+          range: [sorted[0], sorted.at(-1)],
+          unit: independent[0].unit,
+          formula: 'median and range of independent compatible forecasts',
+          source_count: independent.length,
+          input_observation_ids: independent.map((item) => item.observation_id),
+          scope,
+          geography: independent[0].geography,
+          reference_period_start: independent[0].reference_period_start,
+          reference_period_end: independent[0].reference_period_end,
+          evidence_type: 'derived'
+        });
+      }
+    }
+
   const artifact = { schema_version: '1.0.0', run_id: runId, metrics };
-  await writeRunStage(runId, 'derived-metrics', artifact, root); return artifact;
+  await writeRunStage(runId, 'derived-metrics', artifact, root);
+  return artifact;
 }
 
 export async function selectFindings(runId, root = RUNS_DIR) {
